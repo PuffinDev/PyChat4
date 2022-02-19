@@ -153,13 +153,13 @@ class Client:
                 continue
 
             if msg["command"] == "message":
-                self.insert_message(f"{msg['author']['username']}: {msg['message']}")
+                self.insert_system_message(f"{msg['author']['username']}: {msg['message']}")
             
             elif msg["command"] == "user_join":
-                self.insert_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
+                self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
             
             elif msg["command"] == "user_leave":
-                self.insert_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
+                self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
             
             elif msg["command"] == "users":
                 self.insert_command_response("users", msg["users"])
