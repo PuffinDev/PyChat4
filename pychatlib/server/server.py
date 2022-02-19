@@ -60,7 +60,7 @@ class Server:
             self.broadcast_message(users_message(self.clients))
         
         else:
-            print(msg)
+            logger.debug("Invalid message: \n" + str(msg))
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

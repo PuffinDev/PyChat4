@@ -12,7 +12,6 @@ def receive(conn):
             ready = select.select([conn], [], [], 0.1)
             if ready[0]:
                 packet = conn.recv(64)
-                #print(f"Received packet: {packet.decode()}")
             else:
                 break
         except socket.error:
@@ -31,7 +30,6 @@ def receive(conn):
     if not json_msg:
         return None
 
-    #print(f"|{msg.decode()}|")
     return json_msg
 
 def send(conn, msg):
