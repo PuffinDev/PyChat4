@@ -76,6 +76,13 @@ class Client:
 
         send_command(self.s, msg)
 
+    def request_users(self):
+        msg = {
+            "command": "users"
+        }
+
+        send_command(self.s, msg)
+
     def log(self, msg):
         self.insert_message(f"[CLIENT] {msg}")
 
@@ -95,6 +102,8 @@ class Client:
                 self.exit()
             elif command == "username":
                 self.set_username(args)
+            elif command == "users":
+                self.request_users()
             elif command == "theme":
                 if args in THEMES:
                     self.theme = THEMES[args]
@@ -131,3 +140,7 @@ class Client:
             
             elif msg["command"] == "user_leave":
                 self.insert_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
+            
+            elif msg["command"] == "users":
+                for user in msg["users"]:
+                    self.insert_message(f"- {user}")

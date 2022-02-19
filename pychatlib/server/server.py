@@ -55,6 +55,12 @@ class Server:
 
         elif msg["command"] == "set_username":
             client.username = msg["username"]
+        
+        elif msg["command"] == "users":
+            self.broadcast_message(users_message(self.clients))
+        
+        else:
+            print(msg)
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
