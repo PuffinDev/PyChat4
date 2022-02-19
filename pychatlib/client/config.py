@@ -1,3 +1,4 @@
+USERNAME = "UnnamedUser"
 THEMES = {
     "sweden": {
         "bg": "#006AA7",
@@ -7,11 +8,6 @@ THEMES = {
     "snow": {
         "bg": "snow",
         "bg2": "light steel blue",
-        "fg": "black"
-    },
-    "coral": {
-        "bg": "#EB8A90",
-        "bg2": "#2D82B7",
         "fg": "black"
     },
     "night": {

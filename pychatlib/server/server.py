@@ -26,6 +26,9 @@ class Server:
             send(client.connection, msg)
 
     def handle_client(self, client):
+        msg = receive(client.connection)
+        self.handle_message(msg, client)
+
         self.broadcast_message(join_message(client.username))
 
         while True:
@@ -40,7 +43,7 @@ class Server:
 
             self.handle_message(msg, client)
         
-        print(f"[SERVER] Client left: {client.username}")
+        logging.info(f"Client left: {client.username}")
         self.clients.remove(client)
         self.broadcast_message(leave_message(client.username))
         return
@@ -52,9 +55,6 @@ class Server:
 
         elif msg["command"] == "set_username":
             client.username = msg["username"]
-
-        else:
-            print(msg)
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

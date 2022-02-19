@@ -5,13 +5,13 @@ from random import choice
 from tkinter import *
 
 from .networking import receive, send_message, send_command
-from .themes import THEMES
+from .config import THEMES, USERNAME
 
 class Client:
     def __init__(self):
         self.JOIN_MESSAGES = ["just joined!", "has joined", "has entered the chat", "arrived!", "slid in!", "showed up!", "joined the party!"]
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
-        self.THEME = THEMES["sweden"]
+        self.theme = THEMES["sweden"]
 
         self.init_gui()
         self.init_socket()
@@ -22,10 +22,10 @@ class Client:
         self.root.title("PyChat4")
         self.root.geometry("600x350")
 
-        self.root.tk_setPalette(background=self.THEME["bg"], foreground=self.THEME["fg"],
-               activeBackground=self.THEME["bg2"], activeForeground=self.THEME["fg"])
+        self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
+               activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
 
-        self.messages = Listbox(width=90, height=10, font=("", 11), bg=self.THEME["bg2"])
+        self.messages = Listbox(width=90, height=10, font=("", 11), bg=self.theme["bg2"])
         self.messages.pack(pady=(25,15))
         self.insert_message("Welcome to PyChat!")
 
@@ -33,15 +33,15 @@ class Client:
         self.messagebox = Entry(textvariable=self.messagebox_var)
         self.messagebox.pack()
 
-        self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.THEME["bg2"])
+        self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"])
         self.send_message_button.pack(pady=(5, 5))
 
     def set_gui_theme(self):
-        self.root.tk_setPalette(background=self.THEME["bg"], foreground=self.THEME["fg"],
-               activeBackground=self.THEME["bg2"], activeForeground=self.THEME["fg"])
+        self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
+               activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
         
-        self.messages.config(bg=self.THEME["bg2"])
-        self.send_message_button.config(bg=self.THEME["bg2"])
+        self.messages.config(bg=self.theme["bg2"])
+        self.send_message_button.config(bg=self.theme["bg2"])
 
     def gui_mainloop(self):
         self.root.mainloop()
@@ -52,6 +52,8 @@ class Client:
 
         thread = Thread(target=self.receive_loop, daemon=True)
         thread.start()
+
+        send_command(self.s, {"command": "set_username", "username": USERNAME})
 
     def insert_message(self, msg):
         self.messages.insert(END, f"{msg}")
@@ -95,7 +97,7 @@ class Client:
                 self.set_username(args)
             elif command == "theme":
                 if args in THEMES:
-                    self.THEME = THEMES[args]
+                    self.theme = THEMES[args]
                     self.set_gui_theme()
                     self.log(f"Set theme to {args}")
                 else:
