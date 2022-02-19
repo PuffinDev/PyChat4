@@ -12,6 +12,7 @@ class Client:
         self.JOIN_MESSAGES = ["just joined!", "has joined", "has entered the chat", "arrived!", "slid in!", "showed up!", "joined the party!"]
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
         self.theme = THEMES["sweden"]
+        self.system_message_indexes = []
 
         self.init_gui()
         self.init_socket()
@@ -25,12 +26,12 @@ class Client:
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
 
-        self.messages = Listbox(width=90, height=10, font=("", 11), bg=self.theme["bg2"])
+        self.messages = Listbox(width=90, height=10, font=("", 11), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.messages.pack(pady=(25,15))
-        self.insert_message("Welcome to PyChat!")
+        self.insert_system_message("Welcome to PyChat!")
 
         self.messagebox_var = StringVar()
-        self.messagebox = Entry(textvariable=self.messagebox_var)
+        self.messagebox = Entry(textvariable=self.messagebox_var, width=25, font=("", 11))
         self.messagebox.pack()
 
         self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"])
@@ -40,8 +41,11 @@ class Client:
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
         
-        self.messages.config(bg=self.theme["bg2"])
+        self.messages.config(bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.send_message_button.config(bg=self.theme["bg2"])
+
+        for i in self.system_message_indexes:
+            self.messages.itemconfig(i, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
 
     def gui_mainloop(self):
         self.root.mainloop()
@@ -57,7 +61,24 @@ class Client:
 
     def insert_message(self, msg):
         self.messages.insert(END, f"{msg}")
-        self.messages.yview(END) 
+        self.messages.yview(END)
+
+    def insert_system_message(self, msg):
+        self.messages.insert(END, msg)
+        self.system_message_indexes.append(self.messages.size()-1)
+        self.messages.itemconfig(self.messages.size()-1, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
+    
+    def insert_command_response(self, command, messages):
+        start_index = self.messages.size()
+        self.messages.insert(END, f"You used /{command}:")
+        for msg in messages:
+            self.messages.insert(END, f"|   {msg}")
+
+        for i in range(start_index, self.messages.size()):
+            self.system_message_indexes.append(i)
+            self.messages.itemconfig(i, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
+        
+        self.messages.yview(END)
 
     def exit(self):
         msg = {
@@ -76,15 +97,14 @@ class Client:
 
         send_command(self.s, msg)
 
+        self.insert_command_response("username", [f"Set username to {username}"])
+
     def request_users(self):
         msg = {
             "command": "users"
         }
 
         send_command(self.s, msg)
-
-    def log(self, msg):
-        self.insert_message(f"[CLIENT] {msg}")
 
     def send(self):
         msg = self.messagebox_var.get()
@@ -108,20 +128,20 @@ class Client:
                 if args in THEMES:
                     self.theme = THEMES[args]
                     self.set_gui_theme()
-                    self.log(f"Set theme to {args}")
+                    self.insert_command_response("theme", [f"Set theme to {args}"])
                 else:
-                    self.log(f"That is not a valid theme. Use /themes to see them")
+                    self.insert_command_response("theme", [f"That is not a valid theme. Use /themes to see them"])
             elif command == "themes":
-                msg = "Themes: "
+                msg = ["Themes: "]
                 for i, theme in enumerate(THEMES):
                     if i == 0:
-                        msg += f"{theme}"
+                        msg[0] += f"{theme}"
                     else:
-                        msg += f", {theme}"
+                        msg[0] += f", {theme}"
                 
-                self.log(msg)
+                self.insert_command_response("themes", msg)
             else:
-                self.log("That is not a valid command!")
+                self.insert_command_response(command, ["That is not a valid command."])
 
         self.messagebox_var.set("")
 
@@ -142,5 +162,4 @@ class Client:
                 self.insert_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
             
             elif msg["command"] == "users":
-                for user in msg["users"]:
-                    self.insert_message(f"- {user}")
+                self.insert_command_response("users", msg["users"])
