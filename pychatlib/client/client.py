@@ -65,8 +65,9 @@ class Client:
 
     def insert_system_message(self, msg):
         self.messages.insert(END, msg)
-        self.system_message_indexes.append(self.messages.size()-1)
-        self.messages.itemconfig(self.messages.size()-1, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
+        msg_index = self.messages.size()-1
+        self.system_message_indexes.append(msg_index)
+        self.messages.itemconfig(msg_index, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
     
     def insert_command_response(self, command, messages):
         start_index = self.messages.size()
@@ -153,7 +154,7 @@ class Client:
                 continue
 
             if msg["command"] == "message":
-                self.insert_system_message(f"{msg['author']['username']}: {msg['message']}")
+                self.insert_message(f"{msg['author']['username']}: {msg['message']}")
             
             elif msg["command"] == "user_join":
                 self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
