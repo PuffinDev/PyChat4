@@ -1,5 +1,6 @@
 import socket
 import logging
+import time
 from .networking import send, receive
 from .messages import *
 from threading import Thread
@@ -24,12 +25,18 @@ class Server:
     def broadcast_message(self, msg):
         for client in self.clients:
             send(client.connection, msg)
+            logging.debug(f"sent {msg['command']} to {client.username}")
+
+    def update_users(self):
+        self.broadcast_message(users_message(self.clients, manual_call=False))
 
     def handle_client(self, client):
         msg = receive(client.connection)
         self.handle_message(msg, client)
 
         self.broadcast_message(join_message(client.username))
+
+        self.update_users()
 
         while True:
             try:
@@ -44,8 +51,9 @@ class Server:
             self.handle_message(msg, client)
         
         logging.info(f"Client left: {client.username}")
-        self.clients.remove(client)
         self.broadcast_message(leave_message(client.username))
+        self.clients.remove(client)
+        self.update_users()
         return
 
     def handle_message(self, msg, client):
@@ -55,12 +63,13 @@ class Server:
 
         elif msg["command"] == "set_username":
             client.username = msg["username"]
-        
+            self.update_users()
+
         elif msg["command"] == "users":
-            self.broadcast_message(users_message(self.clients))
-        
+            send(client.connection, users_message(self.clients, manual_call=msg["manual_call"]))
+
         else:
-            logger.debug("Invalid message: \n" + str(msg))
+            logging.debug("Invalid message: \n" + str(msg))
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -22,6 +22,12 @@ def receive(conn):
     
         msg += packet
 
+        try:
+            json.loads(msg.decode())
+            break
+        except:
+            pass
+
     try:
         json_msg = json.loads(msg.decode())
     except:
@@ -34,5 +40,7 @@ def receive(conn):
 
 def send(conn, msg):
     msg = json.dumps(msg).encode()
-    conn.send(msg)
-
+    try:
+        conn.send(msg)
+    except:
+        return False

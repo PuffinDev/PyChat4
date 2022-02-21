@@ -10,12 +10,13 @@ def join_message(user):
         "user": user
     }
 
-def users_message(clients):
+def users_message(clients, manual_call=False):
     usernames = []
     for client in clients:
         usernames.append(client.username)
     
     return {
         "command": "users",
-        "users": usernames
+        "users": usernames,
+        "manual_call": manual_call
     }

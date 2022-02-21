@@ -26,16 +26,19 @@ class Client:
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
 
-        self.messages = Listbox(width=90, height=10, font=("", 11), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
-        self.messages.pack(pady=(25,15))
+        self.messages = Listbox(width=60, height=10, font=("", 11), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
+        self.messages.grid(pady=(25,15))
         self.insert_system_message("Welcome to PyChat!")
+
+        self.userlist = Listbox(width=20, height=10, font=("", 11), bg=self.theme["bg2"])
+        self.userlist.grid(row=0, column=1, pady=(25,15))
 
         self.messagebox_var = StringVar()
         self.messagebox = Entry(textvariable=self.messagebox_var, width=25, font=("", 11))
-        self.messagebox.pack()
+        self.messagebox.grid()
 
         self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"])
-        self.send_message_button.pack(pady=(5, 5))
+        self.send_message_button.grid(pady=(5, 5))
 
     def set_gui_theme(self):
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
@@ -102,7 +105,8 @@ class Client:
 
     def request_users(self):
         msg = {
-            "command": "users"
+            "command": "users",
+            "manual_call": True
         }
 
         send_command(self.s, msg)
@@ -139,7 +143,7 @@ class Client:
                         msg[0] += f"{theme}"
                     else:
                         msg[0] += f", {theme}"
-                
+
                 self.insert_command_response("themes", msg)
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
@@ -155,12 +159,17 @@ class Client:
 
             if msg["command"] == "message":
                 self.insert_message(f"{msg['author']['username']}: {msg['message']}")
-            
+
             elif msg["command"] == "user_join":
                 self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
-            
+
             elif msg["command"] == "user_leave":
                 self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
-            
+
             elif msg["command"] == "users":
-                self.insert_command_response("users", msg["users"])
+                if msg["manual_call"]:
+                    self.insert_command_response("users", msg["users"])
+
+                self.userlist.delete(0,END)
+                for user in msg["users"]:
+                    self.userlist.insert(END, user)

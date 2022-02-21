@@ -19,8 +19,14 @@ def receive(conn):
 
         if not packet:
             return False
-    
+
         msg += packet
+
+        try:
+            json.loads(msg.decode())
+            break
+        except:
+            pass
 
     try:
         json_msg = json.loads(msg.decode())
