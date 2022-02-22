@@ -91,15 +91,21 @@ class Server:
         sock.listen()
 
         while True:
-            current_id = 0
+            try:
+                current_id = 0
 
-            conn, addr = sock.accept()
-            logging.info(f"New connection to {addr}")
+                conn, addr = sock.accept()
+                logging.info(f"New connection to {addr}")
 
-            client = Client(conn, addr, current_id)
+                client = Client(conn, addr, current_id)
 
-            thread = Thread(target=self.handle_client, args=(client,))
-            thread.start()
+                thread = Thread(target=self.handle_client, args=(client,), daemon=True)
+                thread.start()
 
-            self.clients.append(client)
-            current_id += 1
+                self.clients.append(client)
+                current_id += 1
+
+            except KeyboardInterrupt:
+                self.broadcast_message({"command": "message", "message": "server shutdown", "author": {"username": "[SERVER]"}})
+                sock.close()
+                break
