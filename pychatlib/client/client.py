@@ -112,6 +112,20 @@ class Client:
 
         send_command(self.s, msg)
 
+    def direct_message(self, args):
+        if not " " in args:
+            return False
+        
+        user, message = args.split(" ", 1)
+
+        msg = {
+            "command": "dm",
+            "user": user,
+            "message": message
+        }
+
+        send_command(self.s, msg)
+
     def send(self):
         msg = self.messagebox_var.get()
         if len(msg) < 1:
@@ -146,6 +160,9 @@ class Client:
                         msg[0] += f", {theme}"
 
                 self.insert_command_response("themes", msg)
+            elif command == "dm":
+                if self.direct_message(args):
+                    self.insert_command_response("dm", [f"Sent message to {args.split(' ', 1)[0]}"])
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
 
@@ -160,6 +177,9 @@ class Client:
 
             if msg["command"] == "message":
                 self.insert_message(f"{msg['author']['username']}: {msg['message']}")
+
+            elif msg["command"] == "dm":
+                self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
 
             elif msg["command"] == "user_join":
                 self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")

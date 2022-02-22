@@ -68,6 +68,18 @@ class Server:
         elif msg["command"] == "users":
             send(client.connection, users_message(self.clients, manual_call=msg["manual_call"]))
 
+        elif msg["command"] == "dm":
+            matching_users = []
+            for client in self.clients:
+                if client.username == msg["user"]:
+                    matching_users.append(client)
+
+            if len(matching_users) != 1:
+                return False
+            recipient = matching_users[0]
+
+            send(recipient.connection, direct_message(client.json(), msg["message"]))
+
         else:
             logging.debug("Invalid message: \n" + str(msg))
 

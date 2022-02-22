@@ -14,9 +14,16 @@ def users_message(clients, manual_call=False):
     usernames = []
     for client in clients:
         usernames.append(client.username)
-    
+
     return {
         "command": "users",
         "users": usernames,
         "manual_call": manual_call
+    }
+
+def direct_message(author, message):
+    return {
+        "command": "dm",
+        "author": author,
+        "message": message
     }
