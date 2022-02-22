@@ -46,6 +46,7 @@ class Client:
         
         self.messages.config(bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.send_message_button.config(bg=self.theme["bg2"])
+        self.userlist.config(bg=self.theme["bg2"])
 
         for i in self.system_message_indexes:
             self.messages.itemconfig(i, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
