@@ -120,7 +120,7 @@ class Client:
 
         msg = {
             "command": "dm",
-            "user": user,
+            "recipient": user,
             "message": message
         }
 

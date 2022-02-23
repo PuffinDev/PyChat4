@@ -70,9 +70,9 @@ class Server:
 
         elif msg["command"] == "dm":
             matching_users = []
-            for client in self.clients:
-                if client.username == msg["user"]:
-                    matching_users.append(client)
+            for c in self.clients:
+                if c.username == msg["recipient"]:
+                    matching_users.append(c)
 
             if len(matching_users) != 1:
                 return False
