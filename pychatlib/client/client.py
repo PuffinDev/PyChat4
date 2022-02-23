@@ -28,6 +28,7 @@ class Client:
         self.logon_win.geometry("200x250")
         self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
+        self.logon_win.protocol("WM_DELETE_WINDOW", exit)
 
         main_title = Label(text="PyChat4", font=("", 19))
         main_title.pack()
@@ -78,7 +79,7 @@ class Client:
     def set_gui_theme(self):
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
-        
+
         self.messages.config(bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.send_message_button.config(bg=self.theme["bg2"])
         self.userlist.config(bg=self.theme["bg2"])
@@ -107,7 +108,7 @@ class Client:
         msg_index = self.messages.size()-1
         self.system_message_indexes.append(msg_index)
         self.messages.itemconfig(msg_index, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
-    
+
     def insert_command_response(self, command, messages):
         start_index = self.messages.size()
         self.messages.insert(END, f"You used /{command}:")
@@ -117,7 +118,7 @@ class Client:
         for i in range(start_index, self.messages.size()):
             self.system_message_indexes.append(i)
             self.messages.itemconfig(i, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
-        
+
         self.messages.yview(END)
 
     def exit(self):
@@ -128,7 +129,7 @@ class Client:
         send_command(self.s, msg)
 
         exit()
-    
+
     def set_username(self, username):
         msg = {
             "command": "set_username",
