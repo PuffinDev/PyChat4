@@ -5,15 +5,16 @@ from random import choice
 from tkinter import *
 
 from .networking import receive, send_message, send_command
-from .config import THEMES, USERNAME
+from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME
 
 class Client:
     def __init__(self):
         self.JOIN_MESSAGES = ["just joined!", "has joined", "has entered the chat", "arrived!", "slid in!", "showed up!", "joined the party!"]
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
+        self.DEFAULT_SERVER = DEFAULT_SERVER
         self.theme = THEMES["sweden"]
         self.system_message_indexes = []
-        self.username = USERNAME
+        self.username = DEFAULT_USERNAME
 
         self.server_address = ["0.0.0.0", 8888]
 
@@ -36,6 +37,7 @@ class Client:
         title = Label(text="Server", font=("", 11))
         title.pack()
         server_entry = Entry(background=self.theme["bg2"], justify="center")
+        server_entry.insert(END, self.DEFAULT_SERVER)
         server_entry.pack()
         title2 = Label(text="Username", font=("", 11))
         title2.pack()

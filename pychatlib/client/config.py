@@ -1,4 +1,5 @@
-USERNAME = "UnnamedUser"
+DEFAULT_SERVER = "puffindev.xyz"
+DEFAULT_USERNAME = "Guest"
 THEMES = {
     "sweden": {
         "bg": "#006AA7",
