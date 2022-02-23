@@ -13,12 +13,47 @@ class Client:
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
         self.theme = THEMES["sweden"]
         self.system_message_indexes = []
+        self.username = USERNAME
 
-        self.init_gui()
+        self.server_address = ["0.0.0.0", 8888]
+
+        self.logon_gui()
+        self.init_main_gui()
         self.init_socket()
         self.gui_mainloop()
 
-    def init_gui(self):
+    def logon_gui(self):
+        self.logon_win = Tk()
+        self.logon_win.title("PyChat4")
+        self.logon_win.geometry("200x250")
+        self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
+               activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
+
+        main_title = Label(text="PyChat4", font=("", 19))
+        main_title.pack()
+        Label().pack()
+        title = Label(text="Server", font=("", 11))
+        title.pack()
+        server_entry = Entry(background=self.theme["bg2"], justify="center")
+        server_entry.pack()
+        title2 = Label(text="Username", font=("", 11))
+        title2.pack()
+        username_entry = Entry(background=self.theme["bg2"], justify="center")
+        username_entry.pack()
+        Label().pack()
+        connect_button = Button(text="Join", command=lambda: self.set_server(server_entry.get(), username_entry.get()), background=self.theme["bg2"])
+        connect_button.pack()
+
+        self.logon_win.mainloop()
+
+    def set_server(self, server_address, username):
+        if server_address:
+            self.server_address[0] = server_address.strip()
+        if username:
+            self.username = username.strip()
+        self.logon_win.destroy()
+
+    def init_main_gui(self):
         self.root = Tk()
         self.root.title("PyChat4")
         self.root.geometry("600x350")
@@ -56,12 +91,12 @@ class Client:
 
     def init_socket(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect(("0.0.0.0", 5555))
+        self.s.connect(tuple(self.server_address))
 
         thread = Thread(target=self.receive_loop, daemon=True)
         thread.start()
 
-        send_command(self.s, {"command": "set_username", "username": USERNAME})
+        send_command(self.s, {"command": "set_username", "username": self.username})
 
     def insert_message(self, msg):
         self.messages.insert(END, f"{msg}")
@@ -115,7 +150,7 @@ class Client:
     def direct_message(self, args):
         if not " " in args:
             return False
-        
+
         user, message = args.split(" ", 1)
 
         msg = {
