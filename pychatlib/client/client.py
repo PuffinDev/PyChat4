@@ -27,6 +27,7 @@ class Client:
         self.logon_win = Tk()
         self.logon_win.title("PyChat4")
         self.logon_win.geometry("200x250")
+        self.logon_win.resizable(False, False)
         self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
         self.logon_win.protocol("WM_DELETE_WINDOW", exit)
@@ -60,6 +61,7 @@ class Client:
         self.root = Tk()
         self.root.title("PyChat4")
         self.root.geometry("600x350")
+        self.root.resizable(False, False)
 
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
@@ -68,11 +70,13 @@ class Client:
         self.messages.grid(pady=(25,15))
         self.insert_system_message("Welcome to PyChat!")
 
-        self.userlist = Listbox(width=20, height=10, font=("", 11), bg=self.theme["bg2"])
+        self.userlist = Listbox(width=14, height=10, font=("", 11), bg=self.theme["bg2"])
         self.userlist.grid(row=0, column=1, pady=(25,15))
 
         self.messagebox_var = StringVar()
         self.messagebox = Entry(textvariable=self.messagebox_var, width=25, font=("", 11))
+        self.messagebox.bind("<Return>", self.send)
+        self.messagebox.focus_set()
         self.messagebox.grid()
 
         self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"])
@@ -164,7 +168,7 @@ class Client:
 
         send_command(self.s, msg)
 
-    def send(self):
+    def send(self, *args):
         msg = self.messagebox_var.get()
         if len(msg) < 1:
             return

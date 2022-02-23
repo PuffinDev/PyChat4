@@ -11,4 +11,3 @@ class Client:
             "username": self.username,
             "address": self.address
         }
-
