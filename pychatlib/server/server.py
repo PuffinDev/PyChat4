@@ -106,6 +106,6 @@ class Server:
                 current_id += 1
 
             except KeyboardInterrupt:
-                self.broadcast_message({"command": "message", "message": "server shutdown", "author": {"username": "[SERVER]"}})
+                self.broadcast_message({"command": "server_message", "message": "server shutdown"})
                 sock.close()
                 break

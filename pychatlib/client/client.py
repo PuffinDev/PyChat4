@@ -214,6 +214,9 @@ class Client:
             if msg["command"] == "message":
                 self.insert_message(f"{msg['author']['username']}: {msg['message']}")
 
+            elif msg["command"] == "server_message":
+                self.insert_system_message(f"[SERVER] {msg['message']}")
+
             elif msg["command"] == "dm":
                 self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
 
