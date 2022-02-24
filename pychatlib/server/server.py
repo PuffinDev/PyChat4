@@ -47,9 +47,11 @@ class Server:
                 break
             elif msg == None:
                 continue
+            elif not msg:
+                continue
 
             self.handle_message(msg, client)
-        
+
         logging.info(f"Client left: {client.username}")
         self.broadcast_message(leave_message(client.username))
         self.clients.remove(client)
