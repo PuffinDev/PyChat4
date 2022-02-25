@@ -114,6 +114,7 @@ class Client:
         msg_index = self.messages.size()-1
         self.system_message_indexes.append(msg_index)
         self.messages.itemconfig(msg_index, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
+        self.messages.yview(END)
 
     def insert_command_response(self, command, messages):
         start_index = self.messages.size()
