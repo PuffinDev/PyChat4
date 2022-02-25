@@ -32,7 +32,8 @@ class Server:
 
     def handle_client(self, client):
         msg = receive(client.connection)
-        self.handle_message(msg, client)
+        if msg:
+            self.handle_message(msg, client)
 
         self.broadcast_message(join_message(client.username))
 
