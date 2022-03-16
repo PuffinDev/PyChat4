@@ -13,7 +13,7 @@ def join_message(user):
 def users_message(clients, manual_call=False):
     usernames = []
     for client in clients:
-        usernames.append(client.username)
+        usernames.append(client.user.username)
 
     return {
         "command": "users",
@@ -26,4 +26,11 @@ def direct_message(author, message):
         "command": "dm",
         "author": author,
         "message": message
+    }
+
+def result_message(result, manual_call=False):
+    return {
+        "command": "result",
+        "result": result,
+        "manual_call": manual_call
     }

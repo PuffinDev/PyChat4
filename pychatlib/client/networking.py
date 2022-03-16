@@ -1,10 +1,10 @@
 import json
 import socket
 import select
+import re
 
 def receive(conn):
     msg = b""
-    
     conn.setblocking(0)
 
     while True:
@@ -16,7 +16,6 @@ def receive(conn):
                 break
         except socket.error:
             break
-
         if not packet:
             return False
 
@@ -28,15 +27,24 @@ def receive(conn):
         except:
             pass
 
-    try:
-        json_msg = json.loads(msg.decode())
-    except:
-        return None
+    msg = msg.decode()
+    messages = []
 
-    if not json_msg:
-        return None
+    messages = re.split(r"(?<=})(?={)", msg)
 
-    return json_msg
+    for message in messages:
+        if message == "":
+            messages.remove(message)
+
+    json_messages = []
+
+    for msg in messages:
+        try:
+            json_messages.append(json.loads(msg))
+        except:
+            return None
+
+    return json_messages
 
 def send_message(s, text):
     s.send(json.dumps({

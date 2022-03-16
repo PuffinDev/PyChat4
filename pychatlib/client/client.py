@@ -2,6 +2,7 @@ import socket
 import json
 from threading import Thread
 from random import choice
+from hashlib import sha256
 from tkinter import *
 
 from .networking import receive, send_message, send_command
@@ -15,6 +16,7 @@ class Client:
         self.theme = THEMES["sweden"]
         self.system_message_indexes = []
         self.username = DEFAULT_USERNAME
+        self.login_status = ""
 
         self.server_address = ["0.0.0.0", 8888]
 
@@ -26,13 +28,13 @@ class Client:
     def logon_gui(self):
         self.logon_win = Tk()
         self.logon_win.title("PyChat4")
-        self.logon_win.geometry("200x250")
+        self.logon_win.geometry("190x260")
         self.logon_win.resizable(False, False)
         self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
         self.logon_win.protocol("WM_DELETE_WINDOW", exit)
 
-        main_title = Label(text="PyChat4", font=("", 19))
+        main_title = Label(text="PyChat4", font=("", 16))
         main_title.pack()
         Label().pack()
         title = Label(text="Server", font=("", 11))
@@ -44,17 +46,22 @@ class Client:
         title2.pack()
         username_entry = Entry(background=self.theme["bg2"], justify="center")
         username_entry.pack()
+        title3 = Label(text="Password", font=("", 11))
+        title3.pack()
+        password_entry = Entry(background=self.theme["bg2"], justify="center", show="*")
+        password_entry.pack()
         Label().pack()
-        connect_button = Button(text="Join", command=lambda: self.set_server(server_entry.get(), username_entry.get()), background=self.theme["bg2"])
+        connect_button = Button(text="Join", command=lambda: self.set_server(server_entry.get(), username_entry.get(), password_entry.get()), background=self.theme["bg2"])
         connect_button.pack()
 
         self.logon_win.mainloop()
 
-    def set_server(self, server_address, username):
+    def set_server(self, server_address, username, password):
         if server_address:
             self.server_address[0] = server_address.strip()
         if username:
             self.username = username.strip()
+        self.password = sha256(password.strip().encode()).hexdigest()
         self.logon_win.destroy()
 
     def init_main_gui(self):
@@ -103,7 +110,7 @@ class Client:
         thread = Thread(target=self.receive_loop, daemon=True)
         thread.start()
 
-        send_command(self.s, {"command": "set_username", "username": self.username})
+        send_command(self.s, {"command": "login", "username": self.username, "password": self.password, "manual_call": False})
 
     def insert_message(self, msg):
         self.messages.insert(END, f"{msg}")
@@ -169,7 +176,17 @@ class Client:
 
         send_command(self.s, msg)
 
-    def send(self, *args):
+    def login(self, args):
+        msg = {
+            "command": "login",
+            "username": args[0],
+            "password": args[1],
+            "manual_call": True
+        }
+
+        send_command(self.s, msg)
+
+    def send(self, *a):
         msg = self.messagebox_var.get()
         if len(msg) < 1:
             return
@@ -206,6 +223,14 @@ class Client:
             elif command == "dm":
                 if self.direct_message(args):
                     self.insert_command_response("dm", [f"Sent message to {args.split(' ', 1)[0]}"])
+            elif command == "login":
+                if not args:
+                    self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
+                args = args.split(" ")
+                if len(args) < 2:
+                    self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
+
+                self.login(args)
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
 
@@ -214,29 +239,51 @@ class Client:
 
     def receive_loop(self):
         while True:
-            msg = receive(self.s)
-            if not msg:
+            messages = receive(self.s)
+            if not messages:
                 continue
 
-            if msg["command"] == "message":
-                self.insert_message(f"{msg['author']['username']}: {msg['message']}")
+            for msg in messages:
+                if msg == None:
+                    continue
 
-            elif msg["command"] == "server_message":
-                self.insert_system_message(f"[SERVER] {msg['message']}")
+                if msg["command"] == "message":
+                    self.insert_message(f"{msg['author']['username']}: {msg['message']}")
 
-            elif msg["command"] == "dm":
-                self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
+                elif msg["command"] == "server_message":
+                    self.insert_system_message(f"[SERVER] {msg['message']}")
 
-            elif msg["command"] == "user_join":
-                self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
+                elif msg["command"] == "dm":
+                    self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
 
-            elif msg["command"] == "user_leave":
-                self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
+                elif msg["command"] == "user_join":
+                    self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
 
-            elif msg["command"] == "users":
-                if msg["manual_call"]:
-                    self.insert_command_response("users", msg["users"])
+                elif msg["command"] == "user_leave":
+                    self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
 
-                self.userlist.delete(0,END)
-                for user in msg["users"]:
-                    self.userlist.insert(END, user)
+                elif msg["command"] == "users":
+                    if msg["manual_call"]:
+                        self.insert_command_response("users", msg["users"])
+
+                    self.userlist.delete(0,END)
+                    for user in msg["users"]:
+                        self.userlist.insert(END, user)
+
+                elif msg["command"] == "result":
+                    if msg["result"] == "invalid_password":
+                        if not msg["manual_call"]:
+                            self.insert_system_message("Invalid password. Please try again with /login <user> <pass>")
+                        else:
+                            self.insert_command_response("login", ["Invalid password"])
+                        self.login_status = msg["result"]
+                    if msg["result"] == "created_account":
+                        if not msg["manual_call"]:
+                            self.insert_system_message("New account created!")
+                        else:
+                            self.insert_command_response("login", ["New account created!"])
+                        self.login_status = msg["result"]
+                    if msg["result"] == "login_success":
+                        self.login_status = msg["result"]
+                        if msg["manual_call"]:
+                            self.insert_command_response("login", ["Logged in sucessfully"])
