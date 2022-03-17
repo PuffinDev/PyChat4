@@ -33,7 +33,6 @@ class Server:
     def broadcast_message(self, msg):
         for client in self.clients:
             send(client.connection, msg)
-            logging.debug(f"sent {msg['command']} to {client.user.info_json()}")
 
     def update_users(self):
         self.broadcast_message(users_message(self.clients, manual_call=False))
