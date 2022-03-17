@@ -175,6 +175,7 @@ class Client:
         }
 
         send_command(self.s, msg)
+        return True
 
     def login(self, args):
         msg = {
@@ -222,7 +223,7 @@ class Client:
                 self.insert_command_response("themes", msg)
             elif command == "dm":
                 if self.direct_message(args):
-                    self.insert_command_response("dm", [f"Sent message to {args.split(' ', 1)[0]}"])
+                    self.insert_command_response(f"dm {args.split(' ', 1)[0]}", [f"{args.split(' ', 1)[1]}"])
             elif command == "login":
                 if not args:
                     self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
