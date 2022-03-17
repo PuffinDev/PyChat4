@@ -4,6 +4,7 @@ from threading import Thread
 from random import choice
 from hashlib import sha256
 from tkinter import *
+from playsound import playsound
 
 from .networking import receive, send_message, send_command
 from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME
@@ -177,6 +178,7 @@ class Client:
         send_command(self.s, msg)
 
         self.insert_command_response("username", [f"Set username to {username}"])
+        self.username = username
 
     def request_users(self):
         msg = {
@@ -274,12 +276,16 @@ class Client:
 
                 if msg["command"] == "message":
                     self.insert_message(f"{msg['author']['username']}: {msg['message']}")
+                    if msg['author']['username'] != self.username and f"@{self.username}" in msg["message"]:
+                        playsound("resources/notif_sound.mp3", block=False)
 
                 elif msg["command"] == "server_message":
                     self.insert_system_message(f"[SERVER] {msg['message']}")
 
                 elif msg["command"] == "dm":
                     self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
+                    if msg['author']['username'] != self.username:
+                        playsound("resources/notif_sound.mp3", block=False)
 
                 elif msg["command"] == "user_join":
                     self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
