@@ -67,27 +67,44 @@ class Client:
     def init_main_gui(self):
         self.root = Tk()
         self.root.title("PyChat4")
-        self.root.geometry("600x350")
+        self.root.geometry("900x500")
         self.root.resizable(False, False)
 
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
 
-        self.messages = Listbox(width=60, height=10, font=("", 11), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
+        self.messages = Listbox(width=80, height=15, font=("", 12), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.messages.grid(pady=(25,15))
+        self.messages.bind('<Double-1>', self.onselect)
         self.insert_system_message("Welcome to PyChat!")
 
-        self.userlist = Listbox(width=14, height=10, font=("", 11), bg=self.theme["bg2"])
+        self.userlist = Listbox(width=22, height=15, font=("", 12), bg=self.theme["bg2"])
         self.userlist.grid(row=0, column=1, pady=(25,15))
+        self.userlist.bind('<Double-1>', self.on_user_select)
 
         self.messagebox_var = StringVar()
-        self.messagebox = Entry(textvariable=self.messagebox_var, width=25, font=("", 11))
+        self.messagebox = Entry(textvariable=self.messagebox_var, width=35, font=("", 12))
         self.messagebox.bind("<Return>", self.send)
         self.messagebox.focus_set()
         self.messagebox.grid()
 
-        self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"])
+        self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"], width=13, height=1)
         self.send_message_button.grid(pady=(5, 5))
+
+    def onselect(self, event):
+        w = event.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        self.root.clipboard_clear()
+        self.root.clipboard_append(value)
+        self.insert_system_message("Copied to clipboard.")
+
+    def on_user_select(self, event):
+        w = event.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        self.messagebox.delete(0, END)
+        self.messagebox.insert(0, "/dm " + value)
 
     def set_gui_theme(self):
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
