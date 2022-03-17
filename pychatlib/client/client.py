@@ -28,7 +28,7 @@ class Client:
     def logon_gui(self):
         self.logon_win = Tk()
         self.logon_win.title("PyChat4")
-        self.logon_win.geometry("190x260")
+        self.logon_win.geometry("190x290")
         self.logon_win.resizable(False, False)
         self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
@@ -37,24 +37,31 @@ class Client:
         main_title = Label(text="PyChat4", font=("", 16))
         main_title.pack()
         Label().pack()
-        title = Label(text="Server", font=("", 11))
+        title = Label(text="Server", font=("", 12))
         title.pack()
-        server_entry = Entry(background=self.theme["bg2"], justify="center")
-        server_entry.insert(END, self.DEFAULT_SERVER)
-        server_entry.pack()
-        title2 = Label(text="Username", font=("", 11))
+        self.server_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
+        self.server_entry.insert(END, self.DEFAULT_SERVER)
+        self.server_entry.pack()
+        self.server_entry.bind("<Return>", self.set_filled_in)
+        title2 = Label(text="Username", font=("", 12))
         title2.pack()
-        username_entry = Entry(background=self.theme["bg2"], justify="center")
-        username_entry.pack()
-        title3 = Label(text="Password", font=("", 11))
+        self.username_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
+        self.username_entry.pack()
+        self.username_entry.bind("<Return>", self.set_filled_in)
+        title3 = Label(text="Password", font=("", 12))
         title3.pack()
-        password_entry = Entry(background=self.theme["bg2"], justify="center", show="*")
-        password_entry.pack()
+        self.password_entry = Entry(background=self.theme["bg2"], justify="center", show="*", font=("", 12))
+        self.password_entry.pack()
+        self.password_entry.bind("<Return>", self.set_filled_in)
         Label().pack()
-        connect_button = Button(text="Join", command=lambda: self.set_server(server_entry.get(), username_entry.get(), password_entry.get()), background=self.theme["bg2"])
+        connect_button = Button(text="Join", command=lambda: self.set_server(self.server_entry.get(), self.username_entry.get(), self.password_entry.get()), background=self.theme["bg2"], font=("", 12))
         connect_button.pack()
 
         self.logon_win.mainloop()
+
+    def set_filled_in(self, *args):
+        if self.server_entry.get() != "" and self.username_entry.get() != "" and self.password_entry.get() != "":
+            self.set_server(self.server_entry.get(), self.username_entry.get(), self.password_entry.get())
 
     def set_server(self, server_address, username, password):
         if server_address:
