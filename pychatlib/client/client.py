@@ -180,10 +180,17 @@ class Client:
         self.insert_command_response("username", [f"Set username to {username}"])
         self.username = username
 
+    def request_online_users(self):
+        msg = {
+            "command": "online_users",
+            "manual_call": True
+        }
+
+        send_command(self.s, msg)
+
     def request_users(self):
         msg = {
-            "command": "users",
-            "manual_call": True
+            "command": "users"
         }
 
         send_command(self.s, msg)
@@ -229,6 +236,8 @@ class Client:
                 self.exit()
             elif command == "username":
                 self.set_username(args)
+            elif command == "online_users":
+                self.request_online_users()
             elif command == "users":
                 self.request_users()
             elif command == "theme":
@@ -293,13 +302,19 @@ class Client:
                 elif msg["command"] == "user_leave":
                     self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
 
-                elif msg["command"] == "users":
+                elif msg["command"] == "online_users":
                     if msg["manual_call"]:
                         self.insert_command_response("users", msg["users"])
 
                     self.userlist.delete(0,END)
                     for user in msg["users"]:
                         self.userlist.insert(END, user)
+
+                elif msg["command"] == "users":
+                    msgs = []
+                    for user in msg["users"]:
+                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]")
+                    self.insert_command_response("users", msgs)
 
                 elif msg["command"] == "result":
                     if msg["result"] == "invalid_password":

@@ -35,11 +35,11 @@ class Server:
             send(client.connection, msg)
 
     def update_users(self):
-        self.broadcast_message(users_message(self.clients, manual_call=False))
+        self.broadcast_message(online_users_message(self.clients, manual_call=False))
 
     def save_users(self):
         users_json = []
-        
+
         for user in self.users:
             users_json.append(user.json())
 
@@ -117,13 +117,16 @@ class Server:
             for user in self.users:
                 if user.username == msg["username"]:
                     return
-            
+
             client.user.username = msg["username"]
             self.update_users()
             self.save_users()
 
+        elif msg["command"] == "online_users":
+            send(client.connection, online_users_message(self.clients, manual_call=msg["manual_call"]))
+
         elif msg["command"] == "users":
-            send(client.connection, users_message(self.clients, manual_call=msg["manual_call"]))
+            send(client.connection, users_message(self.clients, self.users))
 
         elif msg["command"] == "dm":
             matching_users = []
