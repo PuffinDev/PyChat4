@@ -4,6 +4,7 @@ class Client:
         self.address = addr
         self.id = _id
         self.user = None
+        self.removed = False
 
     def json(self):
         return {
@@ -20,17 +21,20 @@ class User:
         return {
             "username": self.username,
             "password": self.password,
-            "id": self.id
+            "id": self.id,
+            "roles": self.roles
         }
 
     def info_json(self):
         return {
             "username": self.username,
-            "id": self.id
+            "id": self.id,
+            "roles": self.roles
         }
 
     def from_json(self, user_json):
         self.username = user_json["username"]
         self.password = user_json["password"]
         self.id = user_json["id"]
+        self.roles = user_json["roles"]
         return self

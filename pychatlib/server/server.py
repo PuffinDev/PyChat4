@@ -23,6 +23,10 @@ class Server:
     def __init__(self):
         self.clients = []
         self.users = []
+        self.ADMIN_USERID = None
+
+        with open("banned_ips.json") as f:
+            self.banned_ips = json.load(f)
 
         with open("users.json") as f:
             json_users = json.load(f)
@@ -30,12 +34,13 @@ class Server:
         for user in json_users:
             self.users.append(User().from_json(user))
 
-    def broadcast_message(self, msg):
-        for client in self.clients:
-            send(client.connection, msg)
-
     def update_users(self):
         self.broadcast_message(online_users_message(self.clients, manual_call=False))
+
+    def username_to_user(self, username):
+        for user in self.users:
+            if user.username == username:
+                return user
 
     def save_users(self):
         users_json = []
@@ -45,6 +50,15 @@ class Server:
 
         with open("users.json", "w") as f:
             json.dump(users_json, f)
+
+    def save_banned_ips(self):
+        with open("banned_ips.json", "w") as f:
+            json.dump(self.banned_ips, f)
+
+
+    def broadcast_message(self, msg):
+        for client in self.clients:
+            send(client.connection, msg)
 
     def handle_client(self, client):
 
@@ -57,6 +71,12 @@ class Server:
                 continue
 
             self.handle_login(msg, client)
+
+        if client.address[0] in self.banned_ips:
+            send(client.connection, result_message("banned"))
+            self.users.remove(client.user)
+            self.update_users()
+            return False
 
         self.broadcast_message(join_message(client.user.username))
 
@@ -73,6 +93,9 @@ class Server:
                 continue
             elif not msg:
                 continue
+
+            if client.removed:
+                break
 
             self.handle_message(msg, client)
 
@@ -98,6 +121,7 @@ class Server:
             self.users.append(User().from_json({
                 "username": msg["username"],
                 "password": msg["password"],
+                "roles": [],
                 "id": len(self.users)
             }))
             self.save_users()
@@ -140,8 +164,44 @@ class Server:
 
             send(recipient.connection, direct_message(client.user.info_json(), msg["message"]))
 
+        elif msg["command"] == "addrole":
+            if "admin" not in client.user.roles and self.ADMIN_USERID != self.username_to_user(msg["username"]).id:
+                send(client.connection, result_message("addrole_insufficient_perms"))
+                return False
+
+            for user in self.users:
+                if user.username == msg["username"]:
+                    user.roles.append(msg["role"])
+                    self.update_users()
+
+
+        elif msg["command"] == "delete_account":
+            if "admin" not in client.user.roles:
+                send(client.connection, result_message("delete_account_insufficient_perms"))
+                return False
+
+            self.delete_account(msg["username"])
+
+        elif msg["command"] == "ban":
+            if "admin" not in client.user.roles:
+                send(client.connection, result_message("ban_insufficient_perms"))
+                return False
+
+            self.delete_account(msg["username"])
+            self.banned_ips.append(client.address[0])
+            self.save_banned_ips()
         else:
             logging.debug("Invalid message: \n" + str(msg))
+
+    def delete_account(self, username):
+        for user in self.users:
+            if user.username == username:
+                self.users.remove(user)
+                self.update_users()
+
+                for client in self.clients:
+                    if client.user.id == user.id:
+                        client.removed = True
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

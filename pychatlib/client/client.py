@@ -161,39 +161,31 @@ class Client:
         self.messages.yview(END)
 
     def exit(self):
-        msg = {
+        send_command(self.s,{
             "command": "exit"
-        }
-
-        send_command(self.s, msg)
+        })
 
         exit()
 
     def set_username(self, username):
-        msg = {
+        send_command(self.s,{
             "command": "set_username",
             "username": username
-        }
-
-        send_command(self.s, msg)
+        })
 
         self.insert_command_response("username", [f"Set username to {username}"])
         self.username = username
 
     def request_online_users(self):
-        msg = {
+        send_command(self.s,{
             "command": "online_users",
             "manual_call": True
-        }
-
-        send_command(self.s, msg)
+        })
 
     def request_users(self):
-        msg = {
+        send_command(self.s,{
             "command": "users"
-        }
-
-        send_command(self.s, msg)
+        })
 
     def direct_message(self, args):
         if not " " in args:
@@ -201,24 +193,43 @@ class Client:
 
         user, message = args.split(" ", 1)
 
-        msg = {
+        send_command(self.s,{
             "command": "dm",
             "recipient": user,
             "message": message
-        }
+        })
 
-        send_command(self.s, msg)
         return True
 
     def login(self, args):
-        msg = {
+        self.password = sha256(args[1].strip().encode()).hexdigest()
+        send_command(self.s,{
             "command": "login",
             "username": args[0],
-            "password": args[1],
+            "password": self.password,
             "manual_call": True
-        }
+        })
 
-        send_command(self.s, msg)
+    def addrole(self, args):
+        username, role = args.split(" ", 1)
+
+        send_command(self.s,{
+            "command": "addrole",
+            "username": username,
+            "role": role
+        })
+
+    def delete_account(self, args):
+        send_command(self.s, {
+            "command": "delete_account",
+            "username": args
+        })
+
+    def ban(self, args):
+        send_command(self.s, {
+            "command": "ban",
+            "username": args
+        })
 
     def send(self, *a):
         msg = self.messagebox_var.get()
@@ -267,6 +278,12 @@ class Client:
                     self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
 
                 self.login(args)
+            elif command == "addrole":
+                self.addrole(args)
+            elif command == "delete_account":
+                self.delete_account(args)
+            elif command == "ban":
+                self.ban(args)
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
 
@@ -333,3 +350,5 @@ class Client:
                         self.login_status = msg["result"]
                         if msg["manual_call"]:
                             self.insert_command_response("login", ["Logged in sucessfully"])
+                    if msg["result"] == "banned":
+                        self.insert_system_message("You are banned from this server.")
