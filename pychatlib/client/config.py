@@ -1,5 +1,6 @@
 DEFAULT_SERVER = "puffindev.xyz"
 DEFAULT_USERNAME = "Guest"
+DEFAULT_THEME = "sweden"
 THEMES = {
     "sweden": {
         "bg": "#006AA7",
@@ -38,7 +39,7 @@ THEMES = {
         "fg_highlight": "#2c698d"
     },
     "hack": {
-        "bg": "Black",
+        "bg": "Grey10",
         "bg2": "Black",
         "fg": "Green",
         "fg_highlight": "Red"

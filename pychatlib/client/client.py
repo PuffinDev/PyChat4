@@ -7,14 +7,14 @@ from tkinter import *
 from playsound import playsound
 
 from .networking import receive, send_message, send_command
-from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME
+from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME, DEFAULT_THEME
 
 class Client:
     def __init__(self):
         self.JOIN_MESSAGES = ["just joined!", "has joined", "has entered the chat", "arrived!", "slid in!", "showed up!", "joined the party!"]
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
         self.DEFAULT_SERVER = DEFAULT_SERVER
-        self.theme = THEMES["sweden"]
+        self.theme = DEFAULT_THEME
         self.system_message_indexes = []
         self.username = DEFAULT_USERNAME
         self.login_status = ""
@@ -252,7 +252,7 @@ class Client:
             elif command == "users":
                 self.request_users()
             elif command == "theme":
-                if args in THEMES:
+                if args and args in THEMES:
                     self.theme = THEMES[args]
                     self.set_gui_theme()
                     self.insert_command_response("theme", [f"Set theme to {args}"])
