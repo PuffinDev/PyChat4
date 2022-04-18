@@ -14,7 +14,7 @@ class Client:
         self.JOIN_MESSAGES = ["just joined!", "has joined", "has entered the chat", "arrived!", "slid in!", "showed up!", "joined the party!"]
         self.LEAVE_MESSAGES = ["left the chat", "has left", "just left", "has exited", "flew away!"]
         self.DEFAULT_SERVER = DEFAULT_SERVER
-        self.theme = DEFAULT_THEME
+        self.theme = THEMES[DEFAULT_THEME]
         self.system_message_indexes = []
         self.username = DEFAULT_USERNAME
         self.login_status = ""
