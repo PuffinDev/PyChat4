@@ -13,16 +13,40 @@ THEMES = {
         "fg": "black",
         "fg_highlight": "red"
     },
+    "light": {
+        "bg": "gainsboro",
+        "bg2": "azure",
+        "fg": "black",
+        "fg_highlight": "red"
+    },
     "night": {
         "bg": "gray16",
         "bg2": "MediumPurple4",
         "fg": "white",
         "fg_highlight": "yellow"
     },
+    "dark": {
+        "bg": "gray18",
+        "bg2": "gray12",
+        "fg": "white",
+        "fg_highlight": "yellow"
+    },
+    "breeze": {
+        "bg": "#bae8e8",
+        "bg2": "#e3f6f5",
+        "fg": "#282745",
+        "fg_highlight": "#2c698d"
+    },
+    "hack": {
+        "bg": "Black",
+        "bg2": "Black",
+        "fg": "Green",
+        "fg_highlight": "Red"
+    },
     "jane": {
-        "bg": "Turquoise4",
-        "bg2": "SeaGreen3",
+        "bg": "dark turquoise",
+        "bg2": "PaleGreen2",
         "fg": "Black",
         "fg_highlight": "red"
-    }
+    },
 }
