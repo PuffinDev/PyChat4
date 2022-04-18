@@ -23,7 +23,7 @@ class Server:
     def __init__(self):
         self.clients = []
         self.users = []
-        self.ADMIN_USERID = None
+        self.ADMIN_USERID = 0
 
         with open("banned_ips.json") as f:
             self.banned_ips = json.load(f)
@@ -165,6 +165,10 @@ class Server:
             send(recipient.connection, direct_message(client.user.info_json(), msg["message"]))
 
         elif msg["command"] == "addrole":
+            if not self.username_to_user(msg["username"]):
+                send(client.connection, result_message("addrole_invalid_user"))
+                return False
+
             if "admin" not in client.user.roles and self.ADMIN_USERID != self.username_to_user(msg["username"]).id:
                 send(client.connection, result_message("addrole_insufficient_perms"))
                 return False
@@ -173,6 +177,8 @@ class Server:
                 if user.username == msg["username"]:
                     user.roles.append(msg["role"])
                     self.update_users()
+                    self.save_users()
+                    send(client.connection, result_message("addrole_success"))
 
 
         elif msg["command"] == "delete_account":
