@@ -339,16 +339,16 @@ class Client:
 
                 elif msg["command"] == "online_users":
                     if msg["manual_call"]:
-                        self.insert_command_response("users", msg["users"])
+                        self.insert_command_response("users", [user["username"] for user in msg["users"]])
 
                     self.userlist.delete(0,END)
                     for user in msg["users"]:
-                        self.userlist.insert(END, user)
+                        self.userlist.insert(END, f"{user['username']}{' (admin)' if 'admin' in user['roles'] else ''}")
 
                 elif msg["command"] == "users":
                     msgs = []
                     for user in msg["users"]:
-                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]")
+                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (admin)' if 'admin' in user['roles'] else ''}")
                     self.insert_command_response("users", msgs)
 
                 elif msg["command"] == "banned":
