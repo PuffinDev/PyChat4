@@ -85,7 +85,7 @@ class Server:
             self.handle_login(msg, client)
 
         if client.address[0] in self.banned_ips:
-            send(client.connection, result_message("login", "banned"))
+            send(client.connection, banned_message())
             self.users.remove(client.user)
             self.update_users()
             return False
@@ -106,8 +106,9 @@ class Server:
             elif not msg:
                 continue
 
-            if client.removed:
-                break
+            if client not in self.clients:
+                # client has been banned
+                return False
 
             self.handle_message(msg, client)
 
@@ -223,13 +224,18 @@ class Server:
             self.delete_account(arg_client.user.username)
             self.banned_ips.append(arg_client.address[0])
             self.save_banned_ips()
+
+            for c in self.clients:
+                if c.user.username == msg["username"]:
+                    send(c.connection, banned_message())
+                    self.clients.remove(c)
+                    self.update_users()
+                    self.save_users()
+                    break
+
             send(client.connection, result_message("ban", "success"))
 
     def delete_account(self, username):
-        args_user = self.username_to_user(username)
-        if not args_user:
-            return False
-
         for user in self.users:
             if user.username == username:
                 self.users.remove(user)
@@ -237,11 +243,6 @@ class Server:
         
         self.save_users()
         self.update_users()
-
-        for client in self.clients:
-            if client.user.username == username:
-                client.removed = True
-                break
         
         return True
 
@@ -270,6 +271,6 @@ class Server:
 
             except KeyboardInterrupt:
                 logging.info("Server shutdown")
-                self.broadcast_message({"command": "server_message", "message": "server shutdown"})
+                self.broadcast_message(server_message("Server shutdown"))
                 sock.close()
                 break

@@ -67,3 +67,13 @@ def custom_result_message(command, result_message):
         "responding_to": command,
         "result_message": result_message
     }
+
+
+def server_message(message):
+    return {
+        "command": "server_message",
+        "message": message
+    }
+
+def banned_message():
+    return {"command": "banned"}

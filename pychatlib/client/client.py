@@ -333,6 +333,9 @@ class Client:
                         msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]")
                     self.insert_command_response("users", msgs)
 
+                elif msg["command"] == "banned":
+                    self.insert_system_message("You have been banned from this server.")
+
                 # result messages
                 
                 elif msg["command"] == "login_result":
@@ -352,8 +355,6 @@ class Client:
                         self.login_status = msg["result"]
                         if msg["manual_call"]:
                             self.insert_command_response("login", ["Logged in sucessfully"])
-                    if msg["result"] == "banned":
-                        self.insert_system_message("You are banned from this server.")
                 
                 elif msg["command"] == "addrole_result":
                     if msg["result"] == "invalid_user":
