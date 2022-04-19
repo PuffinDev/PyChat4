@@ -75,6 +75,7 @@ class Server:
     def handle_client(self, client):
         while not client.user:
             msg = receive(client.connection)
+
             if msg == False:
                 self.clients.remove(client)
                 return
@@ -246,6 +247,7 @@ class Server:
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         sock.bind(("0.0.0.0", 8888))
 
@@ -267,6 +269,7 @@ class Server:
                 current_id += 1
 
             except KeyboardInterrupt:
+                logging.info("Server shutdown")
                 self.broadcast_message({"command": "server_message", "message": "server shutdown"})
                 sock.close()
                 break
