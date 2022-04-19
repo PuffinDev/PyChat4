@@ -245,6 +245,24 @@ class Client:
 
             if command == "exit":
                 self.exit()
+            elif command == "help":
+                lines = [
+                    "--------------------------------------------------------------------------------",
+                    "Client Commands:",
+                    "/username <username>  -  Changes your username",
+                    "/users  -  Lists all users",
+                    "/theme <theme name> -  Changes the UI color theme",
+                    "/themes  -  Lists all available themes",
+                    "/dm <user> <message>  -  Sends a direct message",
+                    "/addrole <user> <role>  -  Adds a role to a user (admin required)",
+                    "/delete_account <user>  -  Deletes a user account (admin required)",
+                    "/ban <user>  -  Bans a user (admin required)",
+                    "--------------------------------------------------------------------------------"
+                ]
+
+                for line in lines:
+                    self.insert_system_message(line)
+            
             elif command == "username":
                 self.set_username(args)
             elif command in ["online_users", "online-users", "onlineusers"]:
