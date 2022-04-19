@@ -254,10 +254,10 @@ class Server:
 
         sock.listen()
 
+        current_id = 0
+
         while True:
             try:
-                current_id = 0
-
                 conn, addr = sock.accept()
                 logging.info(f"New connection to {addr}")
 
