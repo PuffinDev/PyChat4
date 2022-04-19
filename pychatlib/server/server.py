@@ -181,7 +181,7 @@ class Server:
                 send(client.connection, result_message("addrole", "invalid_user"))
                 return False
 
-            if "admin" not in client.user.roles and self.ADMIN_USERID != self.username_to_user(msg["username"]).id:
+            if "admin" not in client.user.roles and self.ADMIN_USERID != client.user.id:
                 send(client.connection, result_message("addrole", "insufficient_perms"))
                 return False
 
