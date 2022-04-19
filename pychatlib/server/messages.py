@@ -11,15 +11,15 @@ def join_message(user):
     }
 
 def online_users_message(clients, manual_call=False):
-    usernames = []
+    users = []
     for client in clients:
         if not client.user:
             continue
-        usernames.append(client.user.username)
+        users.append(client.user.info_json())
 
     return {
         "command": "online_users",
-        "users": usernames,
+        "users": users,
         "manual_call": manual_call
     }
 
