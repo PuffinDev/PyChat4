@@ -97,7 +97,7 @@ class Client:
         self.messagebox.grid()
 
         self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"], width=13, height=1)
-        self.send_message_button.grid(pady=(5, 5))
+        self.send_message_button.grid(pady=(1, 1))
 
     def onselect(self, event):
         w = event.widget
@@ -219,16 +219,16 @@ class Client:
             "role": role
         })
 
-    def delete_account(self, args):
-        send_command(self.s, {
-            "command": "delete_account",
-            "username": args
-        })
-
     def ban(self, args):
         send_command(self.s, {
             "command": "ban",
-            "username": args
+            "username": args.strip()
+        })
+    
+    def delete_account(self, args):
+        send_command(self.s, {
+            "command": "delete_account",
+            "username": args.strip()
         })
 
     def send(self, *a):
@@ -247,7 +247,7 @@ class Client:
                 self.exit()
             elif command == "username":
                 self.set_username(args)
-            elif command == "online_users":
+            elif command in ["online_users", "online-users", "onlineusers"]:
                 self.request_online_users()
             elif command == "users":
                 self.request_users()
@@ -278,9 +278,9 @@ class Client:
                     self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
 
                 self.login(args)
-            elif command == "addrole":
+            elif command in ["addrole", "add_role", "add-role"]:
                 self.addrole(args)
-            elif command == "delete_account":
+            elif command in ["delete_account", "delete-account", "deleteaccount"]:
                 self.delete_account(args)
             elif command == "ban":
                 self.ban(args)
@@ -333,7 +333,9 @@ class Client:
                         msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]")
                     self.insert_command_response("users", msgs)
 
-                elif msg["command"] == "result":
+                # result messages
+                
+                elif msg["command"] == "login_result":
                     if msg["result"] == "invalid_password":
                         if not msg["manual_call"]:
                             self.insert_system_message("Invalid password. Please try again with /login <user> <pass>")
@@ -352,3 +354,29 @@ class Client:
                             self.insert_command_response("login", ["Logged in sucessfully"])
                     if msg["result"] == "banned":
                         self.insert_system_message("You are banned from this server.")
+                
+                elif msg["command"] == "addrole_result":
+                    if msg["result"] == "invalid_user":
+                        self.insert_command_response("addrole", ["Invalid user"])
+                    elif msg["result"] == "insufficient_perms":
+                        self.insert_command_response("addrole", ["Insufficient permissions. Make sure you are a server admin.", "If you own this server, change ADMIN_USERID in lib/server.py to your id."])
+                    elif msg["result"] == "success":
+                        self.insert_command_response("addrole", ["Role added"])
+                
+                elif msg["command"] in ["delete_account_result", "delete_account_result"]:
+                    if msg["result"] == "insufficient_perms":
+                        self.insert_command_response("delete_account", ["Insufficient permissions - you need the admin role to use this command"])
+                    elif msg["result"] == "invalid_user":
+                        self.insert_command_response("delete_account", ["Invalid user"])
+                    elif msg["result"] == "success":
+                        self.insert_command_response("delete_account", [f"Account deleted"])
+                
+                elif msg["command"] in ["ban_result", "ban_result"]:
+                    if msg["result"] == "insufficient_perms":
+                        self.insert_command_response("ban", ["Insufficient permissions - you need the admin role to use this command"])
+                    elif msg["result"] == "invalid_user":
+                        self.insert_command_response("ban", ["Invalid user"])
+                    elif msg["result"] == "user_offline":
+                        self.insert_command_response("ban", ["Invalid user - user needs to be online for ip ban"])
+                    elif msg["result"] == "success":
+                        self.insert_command_response("ban", [f"Successfully ip banned the user"])

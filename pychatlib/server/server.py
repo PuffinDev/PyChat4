@@ -6,7 +6,7 @@ from .networking import send, receive
 from .messages import *
 from threading import Thread
 
-from .client import Client, User
+from .models import Client, User
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
@@ -41,6 +41,18 @@ class Server:
         for user in self.users:
             if user.username == username:
                 return user
+    
+    def username_to_client(self, username):
+        for client in self.clients:
+            if client.user.username == username:
+                return client
+
+    def user_exists(self, username):
+        for user in self.users:
+            if user.username == username:
+                return True
+    
+        return False
 
     def save_users(self):
         users_json = []
@@ -61,7 +73,6 @@ class Server:
             send(client.connection, msg)
 
     def handle_client(self, client):
-
         while not client.user:
             msg = receive(client.connection)
             if msg == False:
@@ -73,7 +84,7 @@ class Server:
             self.handle_login(msg, client)
 
         if client.address[0] in self.banned_ips:
-            send(client.connection, result_message("banned"))
+            send(client.connection, result_message("login", "banned"))
             self.users.remove(client.user)
             self.update_users()
             return False
@@ -111,10 +122,10 @@ class Server:
                 if user.username == msg["username"]:
                     if user.password == msg["password"]:
                         client.user = user
-                        send(client.connection, result_message("login_success", manual_call=msg["manual_call"]))
+                        send(client.connection, result_message("login", "success", manual_call=msg["manual_call"]))
                         return True
                     else:
-                        send(client.connection, result_message("invalid_password", manual_call=msg["manual_call"]))
+                        send(client.connection, result_message("login", "invalid_password", manual_call=msg["manual_call"]))
                         return False
 
             # create account
@@ -128,7 +139,7 @@ class Server:
 
             client.user = self.users[-1]
 
-            send(client.connection, result_message("created_account", manual_call=msg["manual_call"]))
+            send(client.connection, result_message("login", "created_account", manual_call=msg["manual_call"]))
 
         return False
 
@@ -166,11 +177,11 @@ class Server:
 
         elif msg["command"] == "addrole":
             if not self.username_to_user(msg["username"]):
-                send(client.connection, result_message("addrole_invalid_user"))
+                send(client.connection, result_message("addrole", "invalid_user"))
                 return False
 
             if "admin" not in client.user.roles and self.ADMIN_USERID != self.username_to_user(msg["username"]).id:
-                send(client.connection, result_message("addrole_insufficient_perms"))
+                send(client.connection, result_message("addrole", "insufficient_perms"))
                 return False
 
             for user in self.users:
@@ -178,36 +189,60 @@ class Server:
                     user.roles.append(msg["role"])
                     self.update_users()
                     self.save_users()
-                    send(client.connection, result_message("addrole_success"))
-
+                    send(client.connection, result_message("addrole", "success"))
 
         elif msg["command"] == "delete_account":
             if "admin" not in client.user.roles:
-                send(client.connection, result_message("delete_account_insufficient_perms"))
+                send(client.connection, result_message("delete_account", "insufficient_perms"))
                 return False
 
-            self.delete_account(msg["username"])
-
+            if not self.user_exists(msg["username"]):
+                send(client.connection, result_message("delete_account", "invalid_user"))
+                return False
+            
+            
+            if self.delete_account(msg["username"]):
+                send(client.connection, result_message("delete_account", "success"))
+        
         elif msg["command"] == "ban":
             if "admin" not in client.user.roles:
-                send(client.connection, result_message("ban_insufficient_perms"))
+                send(client.connection, result_message("ban", "insufficient_perms"))
                 return False
 
-            self.delete_account(msg["username"])
-            self.banned_ips.append(client.address[0])
+            arg_client = self.username_to_client(msg["username"])
+            if not arg_client:
+                if not self.user_exists(msg["username"]):
+                    send(client.connection, result_message("ban", "invalid_user"))
+                    return False
+                else:
+                    send(client.connection, result_message("ban", "user_offline"))
+                    return False
+            
+            
+            self.delete_account(arg_client.user.username)
+            self.banned_ips.append(arg_client.address[0])
             self.save_banned_ips()
-        else:
-            logging.debug("Invalid message: \n" + str(msg))
+            send(client.connection, result_message("ban", "success"))
 
     def delete_account(self, username):
+        args_user = self.username_to_user(username)
+        if not args_user:
+            return False
+
         for user in self.users:
             if user.username == username:
                 self.users.remove(user)
-                self.update_users()
+                break
+        
+        self.save_users()
+        self.update_users()
 
-                for client in self.clients:
-                    if client.user.id == user.id:
-                        client.removed = True
+        for client in self.clients:
+            if client.user.username == username:
+                client.removed = True
+                break
+        
+        return True
 
     def start(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

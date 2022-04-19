@@ -44,7 +44,7 @@ def users_message(clients, full_users):
 
     return {
         "command": "users",
-        "users": users,
+        "users": users
     }
 
 def direct_message(author, message):
@@ -54,9 +54,16 @@ def direct_message(author, message):
         "message": message
     }
 
-def result_message(result, manual_call=False):
+def result_message(command, result, manual_call=False):
     return {
-        "command": "result",
+        "command": f"{command}_result",
         "result": result,
         "manual_call": manual_call
+    }
+
+def custom_result_message(command, result_message):
+    return {
+        "command": "custom_result",
+        "responding_to": command,
+        "result_message": result_message
     }
