@@ -77,3 +77,6 @@ def server_message(message):
 
 def banned_message():
     return {"command": "banned"}
+
+def kicked_message():
+    return {"command": "kicked"}

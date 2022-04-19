@@ -204,6 +204,14 @@ class Server:
             
             
             if self.delete_account(msg["username"]):
+                for c in self.clients:
+                    if c.user.username == msg["username"]:
+                        send(c.connection, kicked_message())
+                        self.clients.remove(c)
+                        break
+                
+                self.update_users()
+                
                 send(client.connection, result_message("delete_account", "success"))
         
         elif msg["command"] == "ban":

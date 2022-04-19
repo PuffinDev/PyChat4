@@ -353,6 +353,8 @@ class Client:
 
                 elif msg["command"] == "banned":
                     self.insert_system_message("You have been banned from this server.")
+                elif msg["command"] == "kicked":
+                    self.insert_system_message("You have been kicked from this server.")
 
                 # result messages
                 
