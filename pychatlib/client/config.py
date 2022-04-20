@@ -50,4 +50,10 @@ THEMES = {
         "fg": "Black",
         "fg_highlight": "red"
     },
+    "bam": {
+        "bg":"#1F1F1F",
+        "bg2":"#343336",
+        "fg":"#ffc4d5",
+        "fg_highlight":"#ffffff"
+    }
 }
