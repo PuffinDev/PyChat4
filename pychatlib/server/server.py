@@ -2,6 +2,7 @@ import socket
 import logging
 import time
 import json
+from .config import *
 from .networking import send, receive
 from .messages import *
 from threading import Thread
@@ -89,6 +90,8 @@ class Server:
             self.users.remove(client.user)
             self.update_users()
             return False
+
+        send(client.connection, server_message(WELCOME_MESSAGE))
 
         self.broadcast_message(join_message(client.user.username))
 
