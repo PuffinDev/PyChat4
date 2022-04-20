@@ -241,23 +241,26 @@ class Client:
                 command, args = msg[1:].split(" ", 1)
             else:
                 command = msg[1:]
+                args = None
 
             if command == "exit":
                 self.exit()
             elif command == "help":
                 lines = [
-                    "--------------------------------------------------------------------------------",
-                    "Client Commands:",
+                    "----------------------------------------------------------------------------------------",
+                    "•User Commands:",
                     "/username <username>  -  Changes your username",
                     "/users  -  Lists all users",
                     "/theme <theme name> -  Changes the UI color theme",
                     "/themes  -  Lists all available themes",
                     "/clear  -  Clears the chat",
                     "/dm <user> <message>  -  Sends a direct message",
+                    "/switchserver <ipaddress> <username> <password>  -  Connects to the specified server",
+                    "•Admin Commands:",
                     "/addrole <user> <role>  -  Adds a role to a user (admin required)",
                     "/delete_account <user>  -  Deletes a user account (admin required)",
                     "/ban <user>  -  Bans a user (admin required)",
-                    "--------------------------------------------------------------------------------"
+                    "----------------------------------------------------------------------------------------"
                 ]
 
                 for line in lines:
@@ -304,6 +307,22 @@ class Client:
                 self.delete_account(args)
             elif command == "ban":
                 self.ban(args)
+            elif command == "switchserver":
+                args = args.split(" ", 2)
+                if args and len(args) == 3:
+                    self.server_address[0] = args[0].strip()
+                    self.username = args[1].strip()
+                    self.password = sha256(args[2].strip().encode()).hexdigest()
+                    
+                    send_command(self.s, {
+                        "command": "exit"
+                    })
+                    self.s.close()
+
+                    self.init_socket()
+                    self.insert_command_response("setserver", [f"Connected to {self.server_address[0]}"])
+                else:
+                    self.insert_command_response("setserver", ["Missing arguments. Use /setserver <ip> <username> <password>"])
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
 
@@ -312,7 +331,11 @@ class Client:
 
     def receive_loop(self):
         while True:
-            messages = receive(self.s)
+            try:
+                messages = receive(self.s)
+            except OSError:
+                return False
+                
             if not messages:
                 continue
 
