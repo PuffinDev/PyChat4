@@ -22,6 +22,8 @@ PyChat is a feature rich, lightweight and customisable chatroom software written
 
 `cd PyChat4`
 
+`python3 -m pip install -r requirements.txt`
+
 `python3 client.py`
 
 Choose a username and password, and click connect.
