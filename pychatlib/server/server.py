@@ -97,7 +97,7 @@ class Server:
 
             self.handle_login(msg, client)
 
-        if client.address[0] in self.banned_ips:
+        if client.address[0] in self.banned_ips and client.user.id != self.ADMIN_USERID:
             send(client.connection, banned_message())
             self.users.remove(client.user)
             self.update_users()
