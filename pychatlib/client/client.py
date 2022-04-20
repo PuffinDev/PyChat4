@@ -84,7 +84,6 @@ class Client:
         self.messages = Listbox(width=80, height=15, font=("", 12), bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
         self.messages.grid(pady=(25,15))
         self.messages.bind('<Double-1>', self.onselect)
-        self.insert_system_message("Welcome to PyChat!")
 
         self.userlist = Listbox(width=22, height=15, font=("", 12), bg=self.theme["bg2"])
         self.userlist.grid(row=0, column=1, pady=(25,15))
@@ -368,6 +367,12 @@ class Client:
                         else:
                             self.insert_command_response("login", ["Invalid password"])
                         self.login_status = msg["result"]
+                    if msg["result"] == "invalid_username":
+                        if not msg["manual_call"]:
+                            self.insert_system_message("That is not a valid username - it is already taken or it has disallowed characters.")
+                            self.insert_system_message("Try again with /login <user> <pass>")
+                        else:
+                            self.insert_command_response("login", ["Invalid password"])
                     if msg["result"] == "created_account":
                         if not msg["manual_call"]:
                             self.insert_system_message("New account created!")

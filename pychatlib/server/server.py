@@ -2,11 +2,12 @@ import socket
 import logging
 import time
 import json
+import string
+
 from .config import *
 from .networking import send, receive
 from .messages import *
 from threading import Thread
-
 from .models import Client, User
 
 logging.basicConfig(level=logging.DEBUG,
@@ -72,6 +73,17 @@ class Server:
     def broadcast_message(self, msg):
         for client in self.clients:
             send(client.connection, msg)
+    
+    def valid_username(self, username):
+        for user in self.users:
+            if user.username == username:
+                return False
+        
+        for char in username:
+            if char not in string.ascii_letters + string.digits + "_":
+                return False
+        
+        return True
 
     def handle_client(self, client):
         while not client.user:
@@ -133,6 +145,10 @@ class Server:
                         send(client.connection, result_message("login", "invalid_password", manual_call=msg["manual_call"]))
                         return False
 
+            if not self.valid_username(msg["username"]):
+                send(client.connection, result_message("login", "invalid_username"))
+                return False
+
             # create account
             self.users.append(User().from_json({
                 "username": msg["username"],
@@ -154,9 +170,9 @@ class Server:
             self.broadcast_message(msg)
 
         elif msg["command"] == "set_username":
-            for user in self.users:
-                if user.username == msg["username"]:
-                    return
+            if not self.valid_username(msg["username"]):
+                send(client.connection, result_message("login", "invalid_username"))
+                return False
 
             client.user.username = msg["username"]
             self.update_users()
