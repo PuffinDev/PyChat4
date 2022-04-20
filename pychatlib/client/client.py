@@ -253,6 +253,7 @@ class Client:
                     "/users  -  Lists all users",
                     "/theme <theme name> -  Changes the UI color theme",
                     "/themes  -  Lists all available themes",
+                    "/clear  -  Clears the chat",
                     "/dm <user> <message>  -  Sends a direct message",
                     "/addrole <user> <role>  -  Adds a role to a user (admin required)",
                     "/delete_account <user>  -  Deletes a user account (admin required)",
@@ -285,6 +286,8 @@ class Client:
                         msg[0] += f", {theme}"
 
                 self.insert_command_response("themes", msg)
+            elif command == "clear":
+                self.messages.delete(0, END)
             elif command == "dm":
                 if self.direct_message(args):
                     self.insert_command_response(f"dm {args.split(' ', 1)[0]}", [f"{args.split(' ', 1)[1]}"])
