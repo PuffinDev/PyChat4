@@ -1,6 +1,8 @@
 # PyChat4
 PyChat is a feature rich, lightweight and customisable chatroom software written in python.
 
+<img src="screenshots/pychat4.png" width="60%" height="60%">
+
 ## Features
 
 - Easy to set up and customise server
