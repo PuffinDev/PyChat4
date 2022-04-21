@@ -29,34 +29,33 @@ class Client:
     def logon_gui(self):
         self.logon_win = Tk()
         self.logon_win.title("PyChat4")
-        self.logon_win.geometry("190x290")
         self.logon_win.resizable(False, False)
         self.logon_win.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
         self.logon_win.protocol("WM_DELETE_WINDOW", exit)
 
         main_title = Label(text="PyChat4", font=("", 16))
-        main_title.pack()
-        Label().pack()
+        main_title.pack(pady=10)
+        # Label().pack()
         title = Label(text="Server", font=("", 12))
         title.pack()
         self.server_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
         self.server_entry.insert(END, self.DEFAULT_SERVER)
-        self.server_entry.pack()
+        self.server_entry.pack(padx=(4,4))
         self.server_entry.bind("<Return>", self.set_filled_in)
         title2 = Label(text="Username", font=("", 12))
         title2.pack()
         self.username_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
-        self.username_entry.pack()
+        self.username_entry.pack(padx=(4,4))
         self.username_entry.bind("<Return>", self.set_filled_in)
         title3 = Label(text="Password", font=("", 12))
         title3.pack()
         self.password_entry = Entry(background=self.theme["bg2"], justify="center", show="*", font=("", 12))
-        self.password_entry.pack()
+        self.password_entry.pack(padx=(4,4))
         self.password_entry.bind("<Return>", self.set_filled_in)
-        Label().pack()
-        connect_button = Button(text="Join", command=lambda: self.set_server(self.server_entry.get(), self.username_entry.get(), self.password_entry.get()), background=self.theme["bg2"], font=("", 12))
-        connect_button.pack()
+        connect_button = Button(text="Join", command=lambda: self.set_server(self.server_entry.get(), self.username_entry.get(),
+                                self.password_entry.get()), background=self.theme["bg2"], font=("", 12))
+        connect_button.pack(pady=(10,10))
 
         self.logon_win.mainloop()
 
@@ -75,7 +74,6 @@ class Client:
     def init_main_gui(self):
         self.root = Tk()
         self.root.title("PyChat4")
-        self.root.geometry("900x500")
         self.root.resizable(False, False)
 
         self.root.tk_setPalette(background=self.theme["bg"], foreground=self.theme["fg"],
@@ -96,7 +94,7 @@ class Client:
         self.messagebox.grid()
 
         self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"], width=13, height=1)
-        self.send_message_button.grid(pady=(1, 1))
+        self.send_message_button.grid(pady=(12, 16))
 
     def onselect(self, event):
         w = event.widget
