@@ -375,7 +375,10 @@ class Client:
 
                     self.userlist.delete(0,END)
                     for user in msg["users"]:
-                        self.userlist.insert(END, f"{user['username']}{' (admin)' if 'admin' in user['roles'] else ''}")
+                        if "admin" not in user["roles"]:
+                            self.userlist.insert(END, user['username'])
+                        else:
+                            self.userlist.insert(0, f"{user['username']} (admin)")
                     
                     self.online_users = msg["users"]
 
