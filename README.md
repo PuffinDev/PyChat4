@@ -40,4 +40,37 @@ For info on commands, type `/help` into the chat
 
 If you want to connect to your server from outside your local network, forward port 8888 on your router.
 
+## Customise
 
+### Theming
+
+Themes are stored in `client/config.py` in the `THEMES` list. To add a theme, just add a python dict containing your chosen hex colors.
+
+Example:
+
+```py
+"void": {
+    "bg": "#000000",
+    "bg2": "#000000",
+    "fg": "#57B1FF",
+    "fg_highlight": "#87B5E4"
+},
+```
+
+### Bots
+
+Creating a PyChat bot is extremely simple, thanks to https://github.com/PuffinDev/PyChatBot - a library for writing pychat bots.
+Bots have access to all the functionality that normal clients have access to such as DMs, roles, administration etc.
+Check out the documentation for more info.
+
+### Custom servers
+
+The pychat protocol is designed to be hackable, so the official server code can easily be edited to behave however you want. You can add features such as auto-moderation and nicknames just my changing how information is handled on the server.
+
+## Contributing
+
+Any contributions are **greatly appreciated**, whether it's a simple UI change, or a huge protocol overhaul. Feel free to make a pull request!
+
+## Community
+
+If you want to get involved with developing or testing pychat, I highly recommend you join the discord: https://discord.gg/RVba4BkQ5K
