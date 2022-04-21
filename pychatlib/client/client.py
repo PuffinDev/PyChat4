@@ -459,3 +459,5 @@ class Client:
                         self.username = msg["username"]
                     elif msg["result"] == "invalid_username":
                         self.insert_command_response("set_username", ["Invalid username - it is already taken or it has disallowed characters."])
+                    elif msg["result"] == "cooldown":
+                        self.insert_command_response("set_username", ["You are changing your username too quickly."])

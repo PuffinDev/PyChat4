@@ -83,7 +83,7 @@ class Server:
             if char not in string.ascii_letters + string.digits + "_":
                 return False
             
-        if len(username) > 20:
+        if len(username) > 20 or len(username) < 2:
             return False
         
         return True
@@ -176,8 +176,13 @@ class Server:
             if not self.valid_username(msg["username"]):
                 send(client.connection, result_message("set_username", "invalid_username"))
                 return False
+            
+            if time.time() - client.user.last_username_change < 100.0:
+                send(client.connection, result_message("set_username", "cooldown"))
+                return False
 
             client.user.username = msg["username"]
+            client.user.last_username_change = time.time()
             self.update_users()
             self.save_users()
 

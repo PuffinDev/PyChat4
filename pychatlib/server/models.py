@@ -1,3 +1,5 @@
+import time
+
 class Client:
     def __init__(self, conn, addr, _id):
         self.connection = conn
@@ -37,4 +39,5 @@ class User:
         self.password = user_json["password"]
         self.id = user_json["id"]
         self.roles = user_json["roles"]
+        self.last_username_change = time.time() - 100
         return self
