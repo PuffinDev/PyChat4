@@ -1,5 +1,5 @@
 DEFAULT_SERVER = "puffindev.xyz"
-DEFAULT_USERNAME = "Guest"
+DEFAULT_USERNAME = ""
 DEFAULT_THEME = "sweden"
 THEMES = {
     "sweden": {
