@@ -157,6 +157,9 @@ class Client:
 
         self.messages.yview(END)
 
+    def play_notification_sound(self):
+        Thread(target=playsound, args=("resources/notif_sound.mp3",), daemon=True).start()
+
     def exit(self):
         send_command(self.s,{
             "command": "exit"
@@ -353,7 +356,7 @@ class Client:
                 if msg["command"] == "message":
                     self.insert_message(f"{msg['author']['username']}: {msg['message']}")
                     if msg['author']['username'] != self.username and f"@{self.username}" in msg["message"]:
-                        playsound("resources/notif_sound.mp3", block=False)
+                        self.play_notification_sound()
 
                 elif msg["command"] == "server_message":
                     self.insert_system_message(f"[SERVER] {msg['message']}")
@@ -361,7 +364,7 @@ class Client:
                 elif msg["command"] == "dm":
                     self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
                     if msg['author']['username'] != self.username:
-                        playsound("resources/notif_sound.mp3", block=False)
+                        self.play_notification_sound()
 
                 elif msg["command"] == "user_join":
                     self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
