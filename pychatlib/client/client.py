@@ -352,7 +352,7 @@ class Client:
                     continue
 
                 if msg["command"] == "message":
-                    self.insert_message(f"{msg['author']['username']}: {msg['message']}")
+                    self.insert_message(f"{msg['author']['username']}{' (bot)' if 'bot' in msg['author']['roles'] else ''}: {msg['message']}")
                     if msg['author']['username'] != self.username and f"@{self.username}" in msg["message"]:
                         self.notification_sound.play(block=False)
 
@@ -372,21 +372,25 @@ class Client:
 
                 elif msg["command"] == "online_users":
                     if msg["manual_call"]:
-                        self.insert_command_response("users", [user["username"] for user in msg["users"]])
+                        users = []
+                        for user in msg["users"]:
+                            users.append(user["username"] + (' (bot)' if 'bot' in user['roles'] else '') + (' (admin)' if 'admin' in user['roles'] else ''))
+                        
+                        self.insert_command_response("users", users)
 
                     self.userlist.delete(0,END)
                     for user in msg["users"]:
                         if "admin" not in user["roles"]:
-                            self.userlist.insert(END, user['username'])
+                            self.userlist.insert(END, user['username'] + (' (bot)' if 'bot' in user['roles'] else ''))
                         else:
-                            self.userlist.insert(0, f"{user['username']} (admin)")
+                            self.userlist.insert(0, f"{user['username']}{' (bot)' if 'bot' in user['roles'] else ''} (admin)")
                     
                     self.online_users = msg["users"]
 
                 elif msg["command"] == "users":
                     msgs = []
                     for user in msg["users"]:
-                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (admin)' if 'admin' in user['roles'] else ''}")
+                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (bot)' if 'bot' in user['roles'] else ''}{' (admin)' if 'admin' in user['roles'] else ''}")
                     self.insert_command_response("users", msgs)
 
                 elif msg["command"] == "banned":
