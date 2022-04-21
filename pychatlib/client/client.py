@@ -45,7 +45,7 @@ class Client:
         title2 = Label(text="Username", font=("", 12))
         title2.pack()
         self.username_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
-        self.username_entry.insert(END, self.DEFAULT_USERNAME)
+        self.username_entry.insert(END, self.username)
         self.username_entry.pack(padx=(4,4))
         self.username_entry.bind("<Return>", self.set_filled_in)
         title3 = Label(text="Password", font=("", 12))
