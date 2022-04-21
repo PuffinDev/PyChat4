@@ -4,7 +4,7 @@ from threading import Thread
 from random import choice
 from hashlib import sha256
 from tkinter import *
-from playsound import playsound
+from audioplayer import AudioPlayer
 
 from .networking import receive, send_message, send_command
 from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME, DEFAULT_THEME
@@ -18,6 +18,7 @@ class Client:
         self.system_message_indexes = []
         self.username = DEFAULT_USERNAME
         self.login_status = ""
+        self.notification_sound = AudioPlayer("resources/notif_sound.mp3")
 
         self.server_address = ["0.0.0.0", 8888]
 
@@ -156,9 +157,6 @@ class Client:
             self.messages.itemconfig(i, {"fg": self.theme["fg_highlight"], "selectforeground": self.theme["fg_highlight"]})
 
         self.messages.yview(END)
-
-    def play_notification_sound(self):
-        Thread(target=playsound, args=("resources/notif_sound.mp3",), daemon=True).start()
 
     def exit(self):
         send_command(self.s,{
@@ -356,7 +354,7 @@ class Client:
                 if msg["command"] == "message":
                     self.insert_message(f"{msg['author']['username']}: {msg['message']}")
                     if msg['author']['username'] != self.username and f"@{self.username}" in msg["message"]:
-                        self.play_notification_sound()
+                        self.notification_sound.play(block=False)
 
                 elif msg["command"] == "server_message":
                     self.insert_system_message(f"[SERVER] {msg['message']}")
@@ -364,7 +362,7 @@ class Client:
                 elif msg["command"] == "dm":
                     self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
                     if msg['author']['username'] != self.username:
-                        self.play_notification_sound()
+                        self.notification_sound.play(block=False)
 
                 elif msg["command"] == "user_join":
                     self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
