@@ -1,36 +1,18 @@
 DEFAULT_SERVER = "puffindev.xyz"
 DEFAULT_USERNAME = ""
-DEFAULT_THEME = "sweden"
+DEFAULT_THEME = "slate"
 THEMES = {
+    "slate": {
+        "bg": "gray18",
+        "bg2": "gray12",
+        "fg": "white",
+        "fg_highlight": "yellow"
+    },
     "sweden": {
         "bg": "#006AA7",
         "bg2": "#FECC02",
         "fg": "black",
         "fg_highlight": "blue"
-    },
-    "snow": {
-        "bg": "snow",
-        "bg2": "light steel blue",
-        "fg": "black",
-        "fg_highlight": "red"
-    },
-    "light": {
-        "bg": "gainsboro",
-        "bg2": "azure",
-        "fg": "black",
-        "fg_highlight": "red"
-    },
-    "night": {
-        "bg": "gray16",
-        "bg2": "MediumPurple4",
-        "fg": "white",
-        "fg_highlight": "yellow"
-    },
-    "dark": {
-        "bg": "gray18",
-        "bg2": "gray12",
-        "fg": "white",
-        "fg_highlight": "yellow"
     },
     "breeze": {
         "bg": "#bae8e8",
@@ -44,16 +26,40 @@ THEMES = {
         "fg": "Green",
         "fg_highlight": "Red"
     },
-    "jane": {
-        "bg": "dark turquoise",
-        "bg2": "PaleGreen2",
-        "fg": "Black",
-        "fg_highlight": "red"
-    },
     "bam": {
         "bg":"#1F1F1F",
         "bg2":"#343336",
         "fg":"#ffc4d5",
         "fg_highlight":"#ffffff"
-    }
+    },
+    "rust": {
+        "bg":"#da6128",
+        "bg2":"#e28743",
+        "fg":"#21130d",
+        "fg_highlight":"#033268"
+    },
+    "neon": {
+        "bg":"#2b334b",
+        "bg2":"#424a6b",
+        "fg":"#3788bf",
+        "fg_highlight":"#ffbcd9"
+    },
+    "disque": {
+        "bg": "#2c2f33",
+        "bg2": "#23272a",
+        "fg": "#ffffff",
+        "fg_highlight": "#7289da"
+    },
+    "glow": {
+        "bg": "#2B3138",
+        "bg2": "#3D4145",
+        "fg": "#F38F51",
+        "fg_highlight": "#F17300"
+    },
+    "void": {
+        "bg": "#000000",
+        "bg2": "#000000",
+        "fg": "#57B1FF",
+        "fg_highlight": "#87B5E4"
+    },
 }
