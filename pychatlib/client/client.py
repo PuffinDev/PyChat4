@@ -36,7 +36,6 @@ class Client:
 
         main_title = Label(text="PyChat4", font=("", 16))
         main_title.pack(pady=10)
-        # Label().pack()
         title = Label(text="Server", font=("", 12))
         title.pack()
         self.server_entry = Entry(background=self.theme["bg2"], justify="center", font=("", 12))
@@ -88,7 +87,7 @@ class Client:
         self.userlist.bind('<Double-1>', self.on_user_select)
 
         self.messagebox_var = StringVar()
-        self.messagebox = Entry(textvariable=self.messagebox_var, width=35, font=("", 12))
+        self.messagebox = Entry(textvariable=self.messagebox_var, width=30, font=("", 13))
         self.messagebox.bind("<Return>", self.send)
         self.messagebox.focus_set()
         self.messagebox.grid()
