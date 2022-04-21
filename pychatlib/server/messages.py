@@ -47,6 +47,20 @@ def users_message(clients, full_users):
         "users": users
     }
 
+def user_info_message(username, users):
+    for user in users:
+        if user.username == username:
+            return {
+                "command": "user_info_result",
+                "result": "success",
+                "user": user.info_json()
+            }
+    
+    return {
+        "command": "user_info_result",
+        "result": "invalid_user"
+    }
+
 def direct_message(author, message):
     return {
         "command": "dm",

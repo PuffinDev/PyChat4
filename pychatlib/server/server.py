@@ -183,6 +183,9 @@ class Server:
 
         elif msg["command"] == "users":
             send(client.connection, users_message(self.clients, self.users))
+        
+        elif msg["command"] == "user_info":
+            send(client.connection, user_info_message(msg["username"], self.users))
 
         elif msg["command"] == "dm":
             matching_users = []

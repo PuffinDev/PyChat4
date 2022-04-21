@@ -176,14 +176,21 @@ class Client:
         self.username = username
 
     def request_online_users(self):
-        send_command(self.s,{
+        send_command(self.s, {
             "command": "online_users",
             "manual_call": True
         })
 
     def request_users(self):
         send_command(self.s,{
-            "command": "users"
+            "command": "users",
+            "manual_call": True
+        })
+    
+    def request_user_info(self, user):
+        send_command(self.s, {
+            "command": "user_info",
+            "username": user
         })
 
     def direct_message(self, args):
@@ -301,6 +308,10 @@ class Client:
                     self.insert_command_response("login", ["Invalid arguments. Please use /login <username> <password>"])
 
                 self.login(args)
+            elif command in ["userinfo", "user_info", "user-info"]:
+                if not args:
+                    self.insert_command_response("userinfo", ["Invalid arguments. Please use /userinfo <user>"])
+                self.request_user_info(args)
             elif command in ["addrole", "add_role", "add-role"]:
                 self.addrole(args)
             elif command in ["delete_account", "delete-account", "deleteaccount"]:
@@ -369,6 +380,8 @@ class Client:
                     self.userlist.delete(0,END)
                     for user in msg["users"]:
                         self.userlist.insert(END, f"{user['username']}{' (admin)' if 'admin' in user['roles'] else ''}")
+                    
+                    self.online_users = msg["users"]
 
                 elif msg["command"] == "users":
                     msgs = []
@@ -423,7 +436,7 @@ class Client:
                     elif msg["result"] == "success":
                         self.insert_command_response("delete_account", [f"Account deleted"])
                 
-                elif msg["command"] in ["ban_result", "ban_result"]:
+                elif msg["command"] == "ban_result":
                     if msg["result"] == "insufficient_perms":
                         self.insert_command_response("ban", ["Insufficient permissions - you need the admin role to use this command"])
                     elif msg["result"] == "invalid_user":
@@ -432,3 +445,10 @@ class Client:
                         self.insert_command_response("ban", ["Invalid user - user needs to be online for ip ban"])
                     elif msg["result"] == "success":
                         self.insert_command_response("ban", [f"Successfully ip banned the user"])
+
+                elif msg["command"] == "user_info_result":
+                    if msg["result"] == "success":
+                        user = msg['user']
+                        self.insert_command_response("userinfo", [f"Username: {user['username']}", f"Roles: {user['roles']}", f"Id: {user['id']}"])
+                    elif msg["result"] == "invalid_user":
+                        self.insert_command_response("userinfo", ["Invalid user"])
