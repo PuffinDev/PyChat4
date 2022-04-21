@@ -170,9 +170,6 @@ class Client:
             "username": username
         })
 
-        self.insert_command_response("username", [f"Set username to {username}"])
-        self.username = username
-
     def request_online_users(self):
         send_command(self.s, {
             "command": "online_users",
@@ -451,3 +448,10 @@ class Client:
                         self.insert_command_response("userinfo", [f"Username: {user['username']}", f"Roles: {user['roles']}", f"Id: {user['id']}"])
                     elif msg["result"] == "invalid_user":
                         self.insert_command_response("userinfo", ["Invalid user"])
+                
+                elif msg["command"] == "set_username_result":
+                    if msg["result"] == "success":
+                        self.insert_command_response("set_username", ["Changed username"])
+                        self.username = msg["username"]
+                    elif msg["result"] == "invalid_username":
+                        self.insert_command_response("set_username", ["Invalid username - it is already taken or it has disallowed characters."])

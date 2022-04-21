@@ -82,6 +82,9 @@ class Server:
         for char in username:
             if char not in string.ascii_letters + string.digits + "_":
                 return False
+            
+        if len(username) > 20:
+            return False
         
         return True
 
@@ -171,12 +174,16 @@ class Server:
 
         elif msg["command"] == "set_username":
             if not self.valid_username(msg["username"]):
-                send(client.connection, result_message("login", "invalid_username"))
+                send(client.connection, result_message("set_username", "invalid_username"))
                 return False
 
             client.user.username = msg["username"]
             self.update_users()
             self.save_users()
+
+            message_result = result_message("set_username", "success")
+            message_result["username"] = msg["username"]
+            send(client.connection, message_result)
 
         elif msg["command"] == "online_users":
             send(client.connection, online_users_message(self.clients, manual_call=msg["manual_call"]))
