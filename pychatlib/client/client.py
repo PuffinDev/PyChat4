@@ -353,7 +353,7 @@ class Client:
 
                 if msg["command"] == "message":
                     self.insert_message(f"{msg['author']['username']}{' (bot)' if 'bot' in msg['author']['roles'] else ''}: {msg['message']}")
-                    if msg['author']['username'] != self.username and f"@{self.username}" in msg["message"]:
+                    if msg['author']['username'] != self.username and (f"@{self.username}" in msg["message"] or "@everyone" in msg["message"]):
                         self.notification_sound.play(block=False)
 
                 elif msg["command"] == "server_message":
