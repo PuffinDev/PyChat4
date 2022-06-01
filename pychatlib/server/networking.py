@@ -1,46 +1,28 @@
-import json
 import socket
-import select
+import json
+import struct
 
-def receive(conn):
-    msg = b""
-    
-    conn.setblocking(0)
 
-    while True:
-        try:
-            ready = select.select([conn], [], [], 0.1)
-            if ready[0]:
-                packet = conn.recv(64)
-            else:
-                break
-        except socket.error:
-            break
-
-        if not packet:
-            return False
-    
-        msg += packet
-
-        try:
-            json.loads(msg.decode())
-            break
-        except:
-            pass
-
-    try:
-        json_msg = json.loads(msg.decode())
-    except:
-        return None
-
-    if not json_msg:
-        return None
-
-    return json_msg
-
-def send(conn, msg):
+def send(channel, msg):
     msg = json.dumps(msg).encode()
     try:
-        conn.send(msg)
-    except:
+        channel.send(struct.pack("i", len(msg)) + msg)
+    except (ConnectionResetError, BrokenPipeError):
+        pass
+
+
+def receive(channel):
+    try:
+        size = struct.unpack("i", channel.recv(struct.calcsize("i")))[0]
+        data = ""
+        while len(data) < size:
+            msg = channel.recv(size - len(data))
+            if not msg:
+                return None
+            try:
+                data += msg.decode()
+            except Exception as e:
+                return None
+        return json.loads(data.strip())
+    except (OSError, json.JSONDecodeError, struct.error) as e:
         return False

@@ -10,15 +10,17 @@ from .messages import *
 from threading import Thread
 from .models import Client, User
 
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M',
-                    filename='server.log',
-                    filemode='w')
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+    datefmt="%m-%d %H:%M",
+    filename="server.log",
+    filemode="w",
+)
 
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
-logging.getLogger('').addHandler(console)
+logging.getLogger("").addHandler(console)
 
 
 class Server:
@@ -43,7 +45,7 @@ class Server:
         for user in self.users:
             if user.username == username:
                 return user
-    
+
     def username_to_client(self, username):
         for client in self.clients:
             if client.user.username == username:
@@ -53,7 +55,7 @@ class Server:
         for user in self.users:
             if user.username == username:
                 return True
-    
+
         return False
 
     def save_users(self):
@@ -69,23 +71,22 @@ class Server:
         with open("banned_ips.json", "w") as f:
             json.dump(self.banned_ips, f)
 
-
     def broadcast_message(self, msg):
         for client in self.clients:
             send(client.connection, msg)
-    
+
     def valid_username(self, username):
         for user in self.users:
             if user.username == username:
                 return False
-        
+
         for char in username:
             if char not in string.ascii_letters + string.digits + "_":
                 return False
-            
+
         if len(username) > 20 or len(username) < 2:
             return False
-        
+
         return True
 
     def handle_client(self, client):
@@ -107,9 +108,7 @@ class Server:
             return False
 
         send(client.connection, server_message(WELCOME_MESSAGE))
-
         self.broadcast_message(join_message(client.user.username))
-
         self.update_users()
 
         while True:
@@ -142,10 +141,22 @@ class Server:
                 if user.username == msg["username"]:
                     if user.password == msg["password"]:
                         client.user = user
-                        send(client.connection, result_message("login", "success", manual_call=msg["manual_call"]))
+                        send(
+                            client.connection,
+                            result_message(
+                                "login", "success", manual_call=msg["manual_call"]
+                            ),
+                        )
                         return True
                     else:
-                        send(client.connection, result_message("login", "invalid_password", manual_call=msg["manual_call"]))
+                        send(
+                            client.connection,
+                            result_message(
+                                "login",
+                                "invalid_password",
+                                manual_call=msg["manual_call"],
+                            ),
+                        )
                         return False
 
             if not self.valid_username(msg["username"]):
@@ -153,17 +164,26 @@ class Server:
                 return False
 
             # create account
-            self.users.append(User().from_json({
-                "username": msg["username"],
-                "password": msg["password"],
-                "roles": [],
-                "id": len(self.users)
-            }))
+            self.users.append(
+                User().from_json(
+                    {
+                        "username": msg["username"],
+                        "password": msg["password"],
+                        "roles": [],
+                        "id": len(self.users),
+                    }
+                )
+            )
             self.save_users()
 
             client.user = self.users[-1]
 
-            send(client.connection, result_message("login", "created_account", manual_call=msg["manual_call"]))
+            send(
+                client.connection,
+                result_message(
+                    "login", "created_account", manual_call=msg["manual_call"]
+                ),
+            )
 
         return False
 
@@ -174,9 +194,12 @@ class Server:
 
         elif msg["command"] == "set_username":
             if not self.valid_username(msg["username"]):
-                send(client.connection, result_message("set_username", "invalid_username"))
+                send(
+                    client.connection,
+                    result_message("set_username", "invalid_username"),
+                )
                 return False
-            
+
             if time.time() - client.user.last_username_change < 100.0:
                 send(client.connection, result_message("set_username", "cooldown"))
                 return False
@@ -191,11 +214,14 @@ class Server:
             send(client.connection, message_result)
 
         elif msg["command"] == "online_users":
-            send(client.connection, online_users_message(self.clients, manual_call=msg["manual_call"]))
+            send(
+                client.connection,
+                online_users_message(self.clients, manual_call=msg["manual_call"]),
+            )
 
         elif msg["command"] == "users":
             send(client.connection, users_message(self.clients, self.users))
-        
+
         elif msg["command"] == "user_info":
             send(client.connection, user_info_message(msg["username"], self.users))
 
@@ -209,7 +235,10 @@ class Server:
                 return False
             recipient = matching_users[0]
 
-            send(recipient.connection, direct_message(client.user.info_json(), msg["message"]))
+            send(
+                recipient.connection,
+                direct_message(client.user.info_json(), msg["message"]),
+            )
 
         elif msg["command"] == "addrole":
             if not self.username_to_user(msg["username"]):
@@ -229,25 +258,29 @@ class Server:
 
         elif msg["command"] == "delete_account":
             if "admin" not in client.user.roles:
-                send(client.connection, result_message("delete_account", "insufficient_perms"))
+                send(
+                    client.connection,
+                    result_message("delete_account", "insufficient_perms"),
+                )
                 return False
 
             if not self.user_exists(msg["username"]):
-                send(client.connection, result_message("delete_account", "invalid_user"))
+                send(
+                    client.connection, result_message("delete_account", "invalid_user")
+                )
                 return False
-            
-            
+
             if self.delete_account(msg["username"]):
                 for c in self.clients:
                     if c.user.username == msg["username"]:
                         send(c.connection, kicked_message())
                         self.clients.remove(c)
                         break
-                
+
                 self.update_users()
-                
+
                 send(client.connection, result_message("delete_account", "success"))
-        
+
         elif msg["command"] == "ban":
             if "admin" not in client.user.roles:
                 send(client.connection, result_message("ban", "insufficient_perms"))
@@ -261,8 +294,7 @@ class Server:
                 else:
                     send(client.connection, result_message("ban", "user_offline"))
                     return False
-            
-            
+
             self.delete_account(arg_client.user.username)
             self.banned_ips.append(arg_client.address[0])
             self.save_banned_ips()
@@ -282,10 +314,10 @@ class Server:
             if user.username == username:
                 self.users.remove(user)
                 break
-        
+
         self.save_users()
         self.update_users()
-        
+
         return True
 
     def start(self):

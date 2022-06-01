@@ -6,7 +6,7 @@ from hashlib import sha256
 from tkinter import *
 from audioplayer import AudioPlayer
 
-from .networking import receive, send_message, send_command
+from .networking import receive, send
 from .config import THEMES, DEFAULT_SERVER, DEFAULT_USERNAME, DEFAULT_THEME
 
 class Client:
@@ -94,8 +94,8 @@ class Client:
         self.messagebox.focus_set()
         self.messagebox.grid()
 
-        self.send_message_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"], width=13, height=1)
-        self.send_message_button.grid(pady=(12, 16))
+        self.send_button = Button(text="Send", font=("", 12), command=self.send, bg=self.theme["bg2"], width=13, height=1)
+        self.send_button.grid(pady=(12, 16))
 
     def onselect(self, event):
         w = event.widget
@@ -117,7 +117,7 @@ class Client:
                activeBackground=self.theme["bg2"], activeForeground=self.theme["fg"])
 
         self.messages.config(bg=self.theme["bg2"], selectbackground=self.theme["bg2"], selectforeground=self.theme["fg"])
-        self.send_message_button.config(bg=self.theme["bg2"])
+        self.send_button.config(bg=self.theme["bg2"])
         self.userlist.config(bg=self.theme["bg2"])
 
         for i in self.system_message_indexes:
@@ -133,7 +133,7 @@ class Client:
         thread = Thread(target=self.receive_loop, daemon=True)
         thread.start()
 
-        send_command(self.s, {"command": "login", "username": self.username, "password": self.password, "manual_call": False})
+        send(self.s, {"command": "login", "username": self.username, "password": self.password, "manual_call": False})
 
     def insert_message(self, msg):
         self.messages.insert(END, f"{msg}")
@@ -159,32 +159,38 @@ class Client:
         self.messages.yview(END)
 
     def exit(self):
-        send_command(self.s,{
+        send(self.s,{
             "command": "exit"
         })
 
         exit()
 
+    def send_message(self, message):
+        send(self.s,{
+            "command": "message",
+            "message": message
+        })
+
     def set_username(self, username):
-        send_command(self.s,{
+        send(self.s,{
             "command": "set_username",
             "username": username
         })
 
     def request_online_users(self):
-        send_command(self.s, {
+        send(self.s, {
             "command": "online_users",
             "manual_call": True
         })
 
     def request_users(self):
-        send_command(self.s,{
+        send(self.s,{
             "command": "users",
             "manual_call": True
         })
     
     def request_user_info(self, user):
-        send_command(self.s, {
+        send(self.s, {
             "command": "user_info",
             "username": user
         })
@@ -195,7 +201,7 @@ class Client:
 
         user, message = args.split(" ", 1)
 
-        send_command(self.s,{
+        send(self.s,{
             "command": "dm",
             "recipient": user,
             "message": message
@@ -205,7 +211,7 @@ class Client:
 
     def login(self, args):
         self.password = sha256(args[1].strip().encode()).hexdigest()
-        send_command(self.s,{
+        send(self.s,{
             "command": "login",
             "username": args[0],
             "password": self.password,
@@ -215,20 +221,20 @@ class Client:
     def addrole(self, args):
         username, role = args.split(" ", 1)
 
-        send_command(self.s,{
+        send(self.s,{
             "command": "addrole",
             "username": username,
             "role": role
         })
 
     def ban(self, args):
-        send_command(self.s, {
+        send(self.s, {
             "command": "ban",
             "username": args.strip()
         })
     
     def delete_account(self, args):
-        send_command(self.s, {
+        send(self.s, {
             "command": "delete_account",
             "username": args.strip()
         })
@@ -238,7 +244,7 @@ class Client:
         if len(msg) < 1:
             return
         if msg[0] != "/":
-            send_message(self.s, msg)
+            self.send_message(msg)
         else:
             if " " in msg:
                 command, args = msg[1:].split(" ", 1)
@@ -322,7 +328,7 @@ class Client:
                     self.username = args[1].strip()
                     self.password = sha256(args[2].strip().encode()).hexdigest()
                     
-                    send_command(self.s, {
+                    send(self.s, {
                         "command": "exit"
                     })
                     self.s.close()
@@ -340,128 +346,124 @@ class Client:
     def receive_loop(self):
         while True:
             try:
-                messages = receive(self.s)
+                msg = receive(self.s)
             except OSError:
                 return False
-                
-            if not messages:
+
+            if not msg:
                 continue
 
-            for msg in messages:
-                if msg == None:
-                    continue
+            if msg["command"] == "message":
+                self.insert_message(f"{msg['author']['username']}{' (bot)' if 'bot' in msg['author']['roles'] else ''}: {msg['message']}")
+                if msg['author']['username'] != self.username and (f"@{self.username}" in msg["message"] or "@everyone" in msg["message"]):
+                    self.notification_sound.play(block=False)
 
-                if msg["command"] == "message":
-                    self.insert_message(f"{msg['author']['username']}{' (bot)' if 'bot' in msg['author']['roles'] else ''}: {msg['message']}")
-                    if msg['author']['username'] != self.username and (f"@{self.username}" in msg["message"] or "@everyone" in msg["message"]):
-                        self.notification_sound.play(block=False)
+            elif msg["command"] == "server_message":
+                self.insert_system_message(f"[SERVER] {msg['message']}")
 
-                elif msg["command"] == "server_message":
-                    self.insert_system_message(f"[SERVER] {msg['message']}")
+            elif msg["command"] == "dm":
+                self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
+                if msg['author']['username'] != self.username:
+                    self.notification_sound.play(block=False)
 
-                elif msg["command"] == "dm":
-                    self.insert_message(f"[DM] {msg['author']['username']}: {msg['message']}")
-                    if msg['author']['username'] != self.username:
-                        self.notification_sound.play(block=False)
+            elif msg["command"] == "user_join":
+                self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
 
-                elif msg["command"] == "user_join":
-                    self.insert_system_message(f"> {msg['user']} {choice(self.JOIN_MESSAGES)}")
+            elif msg["command"] == "user_leave":
+                self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
 
-                elif msg["command"] == "user_leave":
-                    self.insert_system_message(f"< {msg['user']} {choice(self.LEAVE_MESSAGES)}")
-
-                elif msg["command"] == "online_users":
-                    if msg["manual_call"]:
-                        users = []
-                        for user in msg["users"]:
-                            users.append(user["username"] + (' (bot)' if 'bot' in user['roles'] else '') + (' (admin)' if 'admin' in user['roles'] else ''))
-                        
-                        self.insert_command_response("users", users)
-
-                    self.userlist.delete(0,END)
+            elif msg["command"] == "online_users":
+                if msg["manual_call"]:
+                    users = []
                     for user in msg["users"]:
-                        if "admin" not in user["roles"]:
-                            self.userlist.insert(END, user['username'] + (' (bot)' if 'bot' in user['roles'] else ''))
-                        else:
-                            self.userlist.insert(0, f"{user['username']}{' (bot)' if 'bot' in user['roles'] else ''} (admin)")
+                        users.append(user["username"] + (' (bot)' if 'bot' in user['roles'] else '') + (' (admin)' if 'admin' in user['roles'] else ''))
                     
-                    self.online_users = msg["users"]
+                    self.insert_command_response("users", users)
 
-                elif msg["command"] == "users":
-                    msgs = []
-                    for user in msg["users"]:
-                        msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (bot)' if 'bot' in user['roles'] else ''}{' (admin)' if 'admin' in user['roles'] else ''}")
-                    self.insert_command_response("users", msgs)
+                self.userlist.delete(0,END)
+                for user in msg["users"]:
+                    if "admin" not in user["roles"]:
+                        self.userlist.insert(END, user['username'] + (' (bot)' if 'bot' in user['roles'] else ''))
+                    else:
+                        self.userlist.insert(0, f"{user['username']}{' (bot)' if 'bot' in user['roles'] else ''} (admin)")
+                
+                self.online_users = msg["users"]
 
-                elif msg["command"] == "banned":
-                    self.insert_system_message("You have been banned from this server.")
-                elif msg["command"] == "kicked":
-                    self.insert_system_message("You have been kicked from this server.")
+            elif msg["command"] == "users":
+                msgs = []
+                for user in msg["users"]:
+                    msgs.append(f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (bot)' if 'bot' in user['roles'] else ''}{' (admin)' if 'admin' in user['roles'] else ''}")
+                self.insert_command_response("users", msgs)
 
-                # result messages
-                
-                elif msg["command"] == "login_result":
-                    if msg["result"] == "invalid_password":
-                        if not msg["manual_call"]:
-                            self.insert_system_message("Invalid password. Please try again with /login <user> <pass>")
-                        else:
-                            self.insert_command_response("login", ["Invalid password"])
-                        self.login_status = msg["result"]
-                    if msg["result"] == "invalid_username":
-                        if not msg["manual_call"]:
-                            self.insert_system_message("That is not a valid username - it is already taken or it has disallowed characters.")
-                            self.insert_system_message("Try again with /login <user> <pass>")
-                        else:
-                            self.insert_command_response("login", ["Invalid password"])
-                    if msg["result"] == "created_account":
-                        if not msg["manual_call"]:
-                            self.insert_system_message("New account created!")
-                        else:
-                            self.insert_command_response("login", ["New account created!"])
-                        self.login_status = msg["result"]
-                    if msg["result"] == "login_success":
-                        self.login_status = msg["result"]
-                        if msg["manual_call"]:
-                            self.insert_command_response("login", ["Logged in sucessfully"])
-                
-                elif msg["command"] == "addrole_result":
-                    if msg["result"] == "invalid_user":
-                        self.insert_command_response("addrole", ["Invalid user"])
-                    elif msg["result"] == "insufficient_perms":
-                        self.insert_command_response("addrole", ["Insufficient permissions. Make sure you are a server admin.", "If you own this server, change ADMIN_USERID in lib/server.py to your id."])
-                    elif msg["result"] == "success":
-                        self.insert_command_response("addrole", ["Role added"])
-                
-                elif msg["command"] in ["delete_account_result", "delete_account_result"]:
-                    if msg["result"] == "insufficient_perms":
-                        self.insert_command_response("delete_account", ["Insufficient permissions - you need the admin role to use this command"])
-                    elif msg["result"] == "invalid_user":
-                        self.insert_command_response("delete_account", ["Invalid user"])
-                    elif msg["result"] == "success":
-                        self.insert_command_response("delete_account", [f"Account deleted"])
-                
-                elif msg["command"] == "ban_result":
-                    if msg["result"] == "insufficient_perms":
-                        self.insert_command_response("ban", ["Insufficient permissions - you need the admin role to use this command"])
-                    elif msg["result"] == "invalid_user":
-                        self.insert_command_response("ban", ["Invalid user"])
-                    elif msg["result"] == "user_offline":
-                        self.insert_command_response("ban", ["Invalid user - user needs to be online for ip ban"])
-                    elif msg["result"] == "success":
-                        self.insert_command_response("ban", [f"Successfully ip banned the user"])
+            elif msg["command"] == "banned":
+                self.insert_system_message("You have been banned from this server.")
+            elif msg["command"] == "kicked":
+                self.insert_system_message("You have been kicked from this server.")
 
-                elif msg["command"] == "user_info_result":
-                    if msg["result"] == "success":
-                        user = msg['user']
-                        self.insert_command_response("userinfo", [f"Username: {user['username']}", f"Roles: {user['roles']}", f"Id: {user['id']}"])
-                    elif msg["result"] == "invalid_user":
-                        self.insert_command_response("userinfo", ["Invalid user"])
-                
-                elif msg["command"] == "set_username_result":
-                    if msg["result"] == "success":
-                        self.insert_command_response("set_username", ["Changed username"])
-                        self.username = msg["username"]
-                    elif msg["result"] == "invalid_username":
-                        self.insert_command_response("set_username", ["Invalid username - it is already taken or it has disallowed characters."])
-                    elif msg["result"] == "cooldown":
-                        self.insert_command_response("set_username", ["You are changing your username too quickly."])
+            # result messages
+            
+            elif msg["command"] == "login_result":
+                if msg["result"] == "invalid_password":
+                    if not msg["manual_call"]:
+                        self.insert_system_message("Invalid password. Please try again with /login <user> <pass>")
+                    else:
+                        self.insert_command_response("login", ["Invalid password"])
+                    self.login_status = msg["result"]
+                if msg["result"] == "invalid_username":
+                    if not msg["manual_call"]:
+                        self.insert_system_message("That is not a valid username - it is already taken or it has disallowed characters.")
+                        self.insert_system_message("Try again with /login <user> <pass>")
+                    else:
+                        self.insert_command_response("login", ["Invalid password"])
+                if msg["result"] == "created_account":
+                    if not msg["manual_call"]:
+                        self.insert_system_message("New account created!")
+                    else:
+                        self.insert_command_response("login", ["New account created!"])
+                    self.login_status = msg["result"]
+                if msg["result"] == "login_success":
+                    self.login_status = msg["result"]
+                    if msg["manual_call"]:
+                        self.insert_command_response("login", ["Logged in sucessfully"])
+
+            elif msg["command"] == "addrole_result":
+                if msg["result"] == "invalid_user":
+                    self.insert_command_response("addrole", ["Invalid user"])
+                elif msg["result"] == "insufficient_perms":
+                    self.insert_command_response("addrole", ["Insufficient permissions. Make sure you are a server admin.", "If you own this server, change ADMIN_USERID in lib/server.py to your id."])
+                elif msg["result"] == "success":
+                    self.insert_command_response("addrole", ["Role added"])
+
+            elif msg["command"] in ["delete_account_result", "delete_account_result"]:
+                if msg["result"] == "insufficient_perms":
+                    self.insert_command_response("delete_account", ["Insufficient permissions - you need the admin role to use this command"])
+                elif msg["result"] == "invalid_user":
+                    self.insert_command_response("delete_account", ["Invalid user"])
+                elif msg["result"] == "success":
+                    self.insert_command_response("delete_account", [f"Account deleted"])
+
+            elif msg["command"] == "ban_result":
+                if msg["result"] == "insufficient_perms":
+                    self.insert_command_response("ban", ["Insufficient permissions - you need the admin role to use this command"])
+                elif msg["result"] == "invalid_user":
+                    self.insert_command_response("ban", ["Invalid user"])
+                elif msg["result"] == "user_offline":
+                    self.insert_command_response("ban", ["Invalid user - user needs to be online for ip ban"])
+                elif msg["result"] == "success":
+                    self.insert_command_response("ban", [f"Successfully ip banned the user"])
+
+            elif msg["command"] == "user_info_result":
+                if msg["result"] == "success":
+                    user = msg['user']
+                    self.insert_command_response("userinfo", [f"Username: {user['username']}", f"Roles: {user['roles']}", f"Id: {user['id']}"])
+                elif msg["result"] == "invalid_user":
+                    self.insert_command_response("userinfo", ["Invalid user"])
+
+            elif msg["command"] == "set_username_result":
+                if msg["result"] == "success":
+                    self.insert_command_response("set_username", ["Changed username"])
+                    self.username = msg["username"]
+                elif msg["result"] == "invalid_username":
+                    self.insert_command_response("set_username", ["Invalid username - it is already taken or it has disallowed characters."])
+                elif msg["result"] == "cooldown":
+                    self.insert_command_response("set_username", ["You are changing your username too quickly."])
