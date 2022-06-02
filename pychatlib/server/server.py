@@ -118,9 +118,7 @@ class Server:
                 break
             if msg == False:
                 break
-            elif msg == None:
-                continue
-            elif not msg:
+            elif msg == None or not msg or type(msg) != dict:
                 continue
 
             if client not in self.clients:
