@@ -334,6 +334,7 @@ class Client:
                     "/themes  -  Lists all available themes",
                     "/clear  -  Clears the chat",
                     "/dm <user> <message>  -  Sends a direct message",
+                    "/inbox  -  Displays DMs and pings",
                     "/switchserver <ipaddress> <username> <password>  -  Connects to the specified server",
                     "• Admin Commands:",
                     "/addrole <user> <role>  -  Adds a role to a user (admin required)",
