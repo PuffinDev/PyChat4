@@ -28,6 +28,7 @@ class Server:
         self.clients = []
         self.users = []
         self.ADMIN_USERID = 0
+        self.messages = []
 
         with open("banned_ips.json") as f:
             self.banned_ips = json.load(f)
@@ -189,6 +190,7 @@ class Server:
         if msg["command"] == "message":
             msg["author"] = client.user.info_json()
             self.broadcast_message(msg)
+            self.messages.append(msg)
 
         elif msg["command"] == "set_username":
             if not self.valid_username(msg["username"]):
@@ -237,6 +239,8 @@ class Server:
                 recipient.connection,
                 direct_message(client.user.info_json(), msg["message"]),
             )
+
+            self.messages.append(msg)
 
         elif msg["command"] == "addrole":
             if not self.username_to_user(msg["username"]):
@@ -306,6 +310,18 @@ class Server:
                     break
 
             send(client.connection, result_message("ban", "success"))
+
+        elif msg["command"] == "inbox":
+            inbox = []
+            for message in self.messages:
+                if (
+                    client.user.username in message["message"]
+                    or msg["command"] == "dm"
+                    and msg["recipient"] == client.user.username
+                ):
+                    inbox.append(message)
+
+            send(client.connection, inbox_message(inbox))
 
     def delete_account(self, username):
         for user in self.users:

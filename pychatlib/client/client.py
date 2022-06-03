@@ -423,6 +423,8 @@ class Client:
                             "Missing arguments. Use /switchserver <ip> <username> <password>"
                         ],
                     )
+            elif command == "inbox":
+                send(self.s, {"command": "inbox"})
             else:
                 self.insert_command_response(command, ["That is not a valid command."])
 
@@ -503,6 +505,19 @@ class Client:
                         f"{user['username']} [{'ONLINE' if user['online'] else 'OFFLINE'}]{' (bot)' if 'bot' in user['roles'] else ''}{' (admin)' if 'admin' in user['roles'] else ''}"
                     )
                 self.insert_command_response("users", msgs)
+
+            elif msg["command"] == "inbox":
+                messages = []
+                for message in msg["messages"]:
+                    if message["command"] == "message":
+                        messages.append(
+                            f'{message["author"]["username"]}: {message["message"]}'
+                        )
+                    else:
+                        messages.append(
+                            f'[DM] {message["author"]["username"]}: {message["message"]}'
+                        )
+                self.insert_command_response("inbox", messages)
 
             elif msg["command"] == "banned":
                 self.insert_system_message("You have been banned from this server.")
