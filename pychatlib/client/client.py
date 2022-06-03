@@ -328,7 +328,7 @@ class Client:
                     "----------------------------------------------------------------------------------------",
                     "• User Commands:",
                     "/username <username>  -  Changes your username",
-                    "/users  -  Lists all users"
+                    "/users  -  Lists all users",
                     "/userinfo <username>  -  Displays user information",
                     "/theme <theme name> -  Changes the UI color theme",
                     "/themes  -  Lists all available themes",
