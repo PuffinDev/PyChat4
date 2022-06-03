@@ -326,7 +326,7 @@ class Client:
             elif command == "help":
                 lines = [
                     "----------------------------------------------------------------------------------------",
-                    "•User Commands:",
+                    "• User Commands:",
                     "/username <username>  -  Changes your username",
                     "/users  -  Lists all users"
                     "/userinfo <username>  -  Displays user information",
@@ -335,7 +335,7 @@ class Client:
                     "/clear  -  Clears the chat",
                     "/dm <user> <message>  -  Sends a direct message",
                     "/switchserver <ipaddress> <username> <password>  -  Connects to the specified server",
-                    "•Admin Commands:",
+                    "• Admin Commands:",
                     "/addrole <user> <role>  -  Adds a role to a user (admin required)",
                     "/delete_account <user>  -  Deletes a user account (admin required)",
                     "/ban <user>  -  Bans a user (admin required)",
@@ -402,7 +402,7 @@ class Client:
                 self.delete_account(args)
             elif command == "ban":
                 self.ban(args)
-            elif command == "switchserver":
+            elif command in ["switchserver", "switch-server"]:
                 args = args.split(" ", 2)
                 if args and len(args) == 3:
                     self.server_address[0] = args[0].strip()
@@ -414,13 +414,13 @@ class Client:
 
                     self.init_socket()
                     self.insert_command_response(
-                        "setserver", [f"Connected to {self.server_address[0]}"]
+                        "switchserver", [f"Connected to {self.server_address[0]}"]
                     )
                 else:
                     self.insert_command_response(
-                        "setserver",
+                        "switchserver",
                         [
-                            "Missing arguments. Use /setserver <ip> <username> <password>"
+                            "Missing arguments. Use /switchserver <ip> <username> <password>"
                         ],
                     )
             else:
