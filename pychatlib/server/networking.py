@@ -18,7 +18,7 @@ def receive(channel):
         data = ""
         while len(data) < size:
             msg = channel.recv(size - len(data))
-            if sys.sizeof(msg) > 10000000:
+            if sys.getsizeof(msg) > 10000000:
                 return False
             if not msg:
                 return None
