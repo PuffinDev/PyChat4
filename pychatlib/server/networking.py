@@ -1,6 +1,7 @@
 import socket
 import json
 import struct
+import sys
 
 
 def send(channel, msg):
@@ -17,6 +18,8 @@ def receive(channel):
         data = ""
         while len(data) < size:
             msg = channel.recv(size - len(data))
+            if sys.sizeof(msg) > 10000000:
+                return False
             if not msg:
                 return None
             try:
