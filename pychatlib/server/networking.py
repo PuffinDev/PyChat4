@@ -1,8 +1,6 @@
 import socket
 import json
 import struct
-import sys
-
 
 def send(channel, msg):
     msg = json.dumps(msg).encode()
@@ -15,11 +13,11 @@ def send(channel, msg):
 def receive(channel):
     try:
         size = struct.unpack("i", channel.recv(struct.calcsize("i")))[0]
+        if size > 10000:
+            return False
         data = ""
         while len(data) < size:
             msg = channel.recv(size - len(data))
-            if sys.getsizeof(msg) > 10000000:
-                return False
             if not msg:
                 return None
             try:
