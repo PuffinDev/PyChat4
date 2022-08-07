@@ -73,5 +73,11 @@ THEMES = {
         "bg2": "#f8f9fa",
         "fg": "#212529",
         "fg_highlight": "#ff8800"
+    },
+        "jungle": {
+        "bg": "#109648",
+        "bg2": "#18A999",
+        "fg": "#484349",
+        "fg_highlight": "#F7F0F0"
     }
 }
