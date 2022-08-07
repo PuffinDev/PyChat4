@@ -62,4 +62,10 @@ THEMES = {
         "fg": "#57B1FF",
         "fg_highlight": "#87B5E4"
     },
+    "light grey": {
+        "bg": "#ced4da",
+        "bg2": "#adb5bd",
+        "fg": "#000",
+        "fg_highlight": "#0077ff"
+    }
 }
