@@ -67,5 +67,11 @@ THEMES = {
         "bg2": "#adb5bd",
         "fg": "#000",
         "fg_highlight": "#0077ff"
+     },
+    "light": {
+        "bg": "#fff",
+        "bg2": "#f8f9fa",
+        "fg": "#212529",
+        "fg_highlight": "#ff8800"
     }
 }
