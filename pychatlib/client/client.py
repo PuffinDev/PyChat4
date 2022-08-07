@@ -171,9 +171,9 @@ class Client:
     def on_user_select(self, event):
         w = event.widget
         index = int(w.curselection()[0])
-        value = w.get(index)
+        username = w.get(index).split(" ", 1)[0]
         self.messagebox.delete(0, END)
-        self.messagebox.insert(0, "/dm " + value)
+        self.messagebox.insert(0, f"/dm {username} ")
 
     def set_gui_theme(self):
         self.root.tk_setPalette(
