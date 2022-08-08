@@ -20,6 +20,11 @@ class Client:
             "slid in!",
             "showed up!",
             "joined the party!",
+            "has found the chat!",
+            "has found a new cake for us!",
+            "has found us! Quick! Hide the cake!",
+            ", do you have ZirCoins?",
+            "might be the impostor"
         ]
         self.LEAVE_MESSAGES = [
             "left the chat",
@@ -27,6 +32,16 @@ class Client:
             "just left",
             "has exited",
             "flew away!",
+            "has found the exit",
+            "was exposed by ALT + F4",
+            "just left to touch the grass",
+            "was exposed by virus",
+            "didn't survive",
+            "saw your face",
+            'will be back',
+            "was rickrolled",
+            "deleted wrong file",
+            "has left with our cake"
         ]
         self.DEFAULT_SERVER = DEFAULT_SERVER
         self.theme = THEMES[DEFAULT_THEME]
