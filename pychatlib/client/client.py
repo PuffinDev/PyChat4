@@ -20,6 +20,7 @@ class Client:
             "slid in!",
             "showed up!",
             "joined the party!",
+            "joined to talk!"
         ]
         self.LEAVE_MESSAGES = [
             "left the chat",
@@ -27,6 +28,7 @@ class Client:
             "just left",
             "has exited",
             "flew away!",
+            "had to quit"
         ]
         self.DEFAULT_SERVER = DEFAULT_SERVER
         self.theme = THEMES[DEFAULT_THEME]
